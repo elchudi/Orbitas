@@ -40,8 +40,6 @@ void updF(Cuerpo cuerpos[],int arraySize);
 
 double fuerzaGrav(Cuerpo c1, Cuerpo c2);
 
-
-
 void updAcelOld(Cuerpo cuerpos[], int arraySize);
 void updPosOld(Cuerpo cuerpos[], int arraySize, double deltaT);
 void updVelOld(Cuerpo cuerpos[], int arraySize, double deltaT);
@@ -52,8 +50,6 @@ void updVelFey(Cuerpo cuerpos[], int arraySize, double deltaT);
 void updVelFeyInit(Cuerpo cuerpos[], int arraySize, double deltaT);
 
 double CONSTANTE_GRAVITACION=6.67428e-11;
-
-
 
 int main(void){
 	/*velocidades y posiciones iniciales de dos particulas*/
