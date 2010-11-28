@@ -4,7 +4,6 @@ TODO LIST
 _ Mejorar los calculos de fuerzas y/o velocidades (Feynman tiene una linda explicacion)
 _ Hacer que se lean de ficheros externos los datos de los problemas
 _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
-
 */
 #include <stdio.h>
 #include <string.h>
