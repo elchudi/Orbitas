@@ -10,9 +10,6 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 #include <math.h>
 #include <stdlib.h>
 
-
-
-
 typedef struct{
 	double x;
 	double y;
@@ -25,11 +22,11 @@ typedef struct{
 	Vector fAct;
 	Vector acel;
 	double masa;
-} Cuerpo;
+} Body;
 
 Vector vectoresResta(Vector vec1, Vector vec2);
 
-double cuerposDist(Cuerpo c1, Cuerpo c2);
+double bodiesDist(Body c1, Body c2);
 double vectoresDist(Vector vec1, Vector vec2);
 double vectorModulo(Vector vec);
 
@@ -37,34 +34,41 @@ void holaMundo(void);
 
 double vectorCoorModulo(double x1, double y1, double z1);
 
-void updF(Cuerpo cuerpos[],int arraySize);
+void updF(Body bodies[],int arraySize);
 
 
-double fuerzaGrav(Cuerpo c1, Cuerpo c2);
+double fuerzaGrav(Body c1, Body c2);
 
-void updAcelOld(Cuerpo cuerpos[], int arraySize);
-void updPosOld(Cuerpo cuerpos[], int arraySize, double deltaT);
-void updVelOld(Cuerpo cuerpos[], int arraySize, double deltaT);
+void updAcelOld(Body bodies[], int arraySize);
+void updPosOld(Body bodies[], int arraySize, double deltaT);
+void updVelOld(Body bodies[], int arraySize, double deltaT);
 
-void updAcelFey(Cuerpo cuerpos[], int arraySize);
-void updPosFey(Cuerpo cuerpos[], int arraySize, double deltaT);
-void updVelFey(Cuerpo cuerpos[], int arraySize, double deltaT);
-void updVelFeyInit(Cuerpo cuerpos[], int arraySize, double deltaT);
+void updAcelFey(Body bodies[], int arraySize);
+void updPosFey(Body bodies[], int arraySize, double deltaT);
+void updVelFey(Body bodies[], int arraySize, double deltaT);
+void updVelFeyInit(Body bodies[], int arraySize, double deltaT);
 
 double CONSTANTE_GRAVITACION=6.67428e-11;
+int DIRECT_METHOD=1;
+int FEYNMAN_METHOD=2;
 
-double totalEnergy(Cuerpo cuerpos[], int cuerposSize);
-double kinEnergy(Cuerpo cuerpos[], int cuerposSize);
-double potEnery(Cuerpo cuerpos[], int cuerposSize);
 
-void printData(Cuerpo cuerpos[], int arraySize, FILE *file, int dataType);
+double totalEnergy(Body bodies[], int bodiesSize);
+double kinEnergy(Body bodies[], int bodiesSize);
+double potEnery(Body bodies[], int bodiesSize);
+
+void printPosData(Body bodies[], int arraySize, FILE *file, int dataType);
+void printEnerData(Body bodies[], int arraySize, FILE *file, int dataType);
+
+
 
 int main(void){
 	/*velocidades y posiciones iniciales de dos particulas*/
 	Vector pos1, vel1;	
-	Cuerpo sol,tie,luna,venus;
-	Cuerpo cuerpos[3];
-	int steps,cuerposSize;
+	Body sol,tie,luna,venus;
+	int steps;
+	int const bodiesSize=4;
+	Body bodies[4];
 	double deltaT;
 	int cont;
 	FILE *file,*enerFile;
@@ -80,17 +84,13 @@ int main(void){
 	}
 
 	
-	deltaT=16004;
+	deltaT=1600004;
 	steps=1200000;
-	amountOfPoints=30000;	
+	amountOfPoints=3176;	
 	fileOutInterval = steps/amountOfPoints;
 	
-
-
-	
-
-	/*inicializar los datos*/
-	/*cuerpo 1*/
+	/*Data Init*/
+	/*Sun*/
 	pos1.x=0;
 	pos1.y=0;
 	pos1.z=0;	
@@ -101,8 +101,7 @@ int main(void){
 	sol.vel=vel1;
 	sol.masa=1.989e30;	
 	
-
-	/*cuerpo 2*/
+	/*Earth*/
 	pos1.x=1.496e11;
 	pos1.y=0;
 	pos1.z=0;
@@ -112,9 +111,8 @@ int main(void){
 	tie.masa=5.9736e24;	
 	tie.pos=pos1;
 	tie.vel=vel1;
-		
 
-	/*luna*/
+	/*Moon*/
 	pos1.x=tie.pos.x+3.84339e8;
 	pos1.y=tie.pos.y;
 	pos1.z=tie.pos.z;
@@ -136,45 +134,35 @@ int main(void){
 	venus.pos=pos1;
 	venus.vel=vel1;
 		
+	bodies[0]=sol;
+	bodies[1]=tie;	
+	bodies[2]=luna;
+	bodies[3]=venus;
 	
-
-	cuerpos[0]=sol;
-	cuerpos[1]=tie;	
-	cuerpos[2]=luna;
-	cuerpos[3]=venus;
-	cuerposSize=4;	
-	
-	/*
-	printf("la distancia entre los cuerpos es %g \n",cuerposDist(sol,tie));
-	printf("la fuerza entre los cuerpos es %g \n",fuerzaGrav(sol,tie));
-	printf("la distancia entre vectores es %g \n",vectoresDist(pos1,pos2));
-	printf("objeto con direccion %f",*cuerpos);
-	printf("masa de 1 %f\n",cuerpos[0].masa);
-	printf("masa de 1 %f\n",cuerpos[0].masa);
-	*/
-
 	/*init feynman computation*/
-	updF(cuerpos,cuerposSize);
-	updVelFeyInit(cuerpos,cuerposSize,cuerposSize);
+	updF(bodies,bodiesSize);
+	updVelFeyInit(bodies,bodiesSize,bodiesSize);
 
 	for (cont=0;cont<steps;cont++){
 		outData=!(cont%fileOutInterval);
-		updPosFey(cuerpos, cuerposSize, deltaT);
-		updF(cuerpos, cuerposSize);
-		updAcelFey(cuerpos,cuerposSize);
-		updVelFey(cuerpos, cuerposSize, deltaT);
+		updPosFey(bodies, bodiesSize, deltaT);
+		updF(bodies, bodiesSize);
+		updAcelFey(bodies,bodiesSize);
+		updVelFey(bodies, bodiesSize, deltaT);
 		if(outData){
-			printData(cuerpos,cuerposSize,file,0);
+			printPosData(bodies,bodiesSize,file,FEYNMAN_METHOD);
+			printEnerData(bodies,bodiesSize,enerFile,FEYNMAN_METHOD);
 		}
 		/*
-		updAcelOld(cuerpos,cuerposSize);
-		updVelOld(cuerpos, cuerposSize, deltaT);
-		updPosOld(cuerpos, cuerposSize, deltaT);
+		updAcelOld(bodies,bodiesSize);
+		updVelOld(bodies, bodiesSize, deltaT);
+		updPosOld(bodies, bodiesSize, deltaT);
 		*/
 	}
 
 
 	fclose(file);
+	fclose(enerFile);
 	return 0;
 }
 
@@ -204,184 +192,179 @@ double vectoresDist(Vector vec1, Vector vec2){
 	return vectorModulo(vectoresResta(vec1,vec2));
 }
 
-double cuerposDist(Cuerpo c1, Cuerpo c2){
+double bodiesDist(Body c1, Body c2){
 	return vectoresDist(c1.pos,c2.pos);
 }
 
-double fuerzaGrav(Cuerpo c1, Cuerpo c2){
+double fuerzaGrav(Body c1, Body c2){
 	double toReturn;
-	toReturn= c1.masa*c2.masa*CONSTANTE_GRAVITACION/pow(cuerposDist(c1,c2),2);
+	toReturn= c1.masa*c2.masa*CONSTANTE_GRAVITACION/pow(bodiesDist(c1,c2),2);
 	return toReturn;
 }
 
-void updF(Cuerpo cuerpos[], int arraySize){
+void updF(Body bodies[], int arraySize){
 	int j,k;
 	double force;
 	Vector dirR;
 	double distancia;
 
-	/*	
-	printf("objeto con direccion %f",*cuerpos);
-	arraySize=sizeof(cuerpos)/sizeof(cuerpos[0]);
-	printf("sizeOf(cuerpos) %d\n",sizeof(cuerpos));
-	printf("sizeof(cuerpos[0]) %d\n",sizeof(cuerpos[0]));
-	printf("sizeof(*cuerpos) %d\n",sizeof(*cuerpos));
-	printf("arraySize %d\n",arraySize);
-	*/
 	/*
 	Se limpian las fuerzas de la iteracion anterior
 	*/
 	for(j=0;j<arraySize;j++){
-		cuerpos[j].fAct.x=0;
-		cuerpos[j].fAct.y=0;
-		cuerpos[j].fAct.z=0;
+		bodies[j].fAct.x=0;
+		bodies[j].fAct.y=0;
+		bodies[j].fAct.z=0;
 	}	
 
 	for(j=0;j<arraySize;j++){
 		for (k=j+1;k<arraySize;k++){
-			force = fuerzaGrav(cuerpos[j],cuerpos[k]);
-			dirR=vectoresResta(cuerpos[j].pos,cuerpos[k].pos);
+			force = fuerzaGrav(bodies[j],bodies[k]);
+			dirR=vectoresResta(bodies[j].pos,bodies[k].pos);
 			distancia=vectorModulo(dirR);	
 			
-			/*es un menos por que el vector apunta de k hacia j*/			
-			cuerpos[j].fAct.x+=-force*dirR.x/distancia;	
-			cuerpos[j].fAct.y+=-force*dirR.y/distancia;	
-			cuerpos[j].fAct.z+=-force*dirR.z/distancia;	
+			/*es un menos por que el vector apunta de k hacia j*/
+			bodies[j].fAct.x+=-force*dirR.x/distancia;	
+			bodies[j].fAct.y+=-force*dirR.y/distancia;	
+			bodies[j].fAct.z+=-force*dirR.z/distancia;	
 	
-			cuerpos[k].fAct.x+=force*dirR.x/distancia;	
-			cuerpos[k].fAct.y+=force*dirR.y/distancia;	
-			cuerpos[k].fAct.z+=force*dirR.z/distancia;	
+			bodies[k].fAct.x+=force*dirR.x/distancia;	
+			bodies[k].fAct.y+=force*dirR.y/distancia;	
+			bodies[k].fAct.z+=force*dirR.z/distancia;	
 		}	
 	}
 }
 
-
-void updAcelOld(Cuerpo cuerpos[], int arraySize){
+void updAcelOld(Body bodies[], int arraySize){
 	int i;
-	
 	for(i = 0; i<arraySize;i++){
-		cuerpos[i].acel.x=cuerpos[i].fAct.x/cuerpos[i].masa;
-		cuerpos[i].acel.y=cuerpos[i].fAct.y/cuerpos[i].masa;
-		cuerpos[i].acel.z=cuerpos[i].fAct.z/cuerpos[i].masa;
+		bodies[i].acel.x=bodies[i].fAct.x/bodies[i].masa;
+		bodies[i].acel.y=bodies[i].fAct.y/bodies[i].masa;
+		bodies[i].acel.z=bodies[i].fAct.z/bodies[i].masa;
 	}
 }
 
-void updAcelFey(Cuerpo cuerpos[], int arraySize){
+void updAcelFey(Body bodies[], int arraySize){
 	int i;
-	
 	for(i = 0; i<arraySize;i++){
-		cuerpos[i].acel.x=cuerpos[i].fAct.x/cuerpos[i].masa;
-		cuerpos[i].acel.y=cuerpos[i].fAct.y/cuerpos[i].masa;
-		cuerpos[i].acel.z=cuerpos[i].fAct.z/cuerpos[i].masa;
+		bodies[i].acel.x=bodies[i].fAct.x/bodies[i].masa;
+		bodies[i].acel.y=bodies[i].fAct.y/bodies[i].masa;
+		bodies[i].acel.z=bodies[i].fAct.z/bodies[i].masa;
 	}
 }
 
-void updVelFey(Cuerpo cuerpos[], int arraySize, double deltaT){
+void updVelFey(Body bodies[], int arraySize, double deltaT){
 	int i;
-	Cuerpo c;
+	Body c;
 	for (i=0;i<arraySize;i++){
-		c = cuerpos[i];
-		cuerpos[i].vel.x=cuerpos[i].vel.x+cuerpos[i].acel.x*deltaT;
-		cuerpos[i].vel.y=cuerpos[i].vel.y+cuerpos[i].acel.y*deltaT;
-		cuerpos[i].vel.z=cuerpos[i].vel.z+cuerpos[i].acel.z*deltaT;
+		c = bodies[i];
+		bodies[i].vel.x=bodies[i].vel.x+bodies[i].acel.x*deltaT;
+		bodies[i].vel.y=bodies[i].vel.y+bodies[i].acel.y*deltaT;
+		bodies[i].vel.z=bodies[i].vel.z+bodies[i].acel.z*deltaT;
 	}
 }
 
-void updVelFeyInit(Cuerpo cuerpos[], int arraySize, double deltaT){
+void updVelFeyInit(Body bodies[], int arraySize, double deltaT){
 	int i;
-	Cuerpo c;
+	Body c;
 	for (i=0;i<arraySize;i++){
-		c = cuerpos[i];
-		cuerpos[i].vel.x=cuerpos[i].vel.x+cuerpos[i].acel.x*deltaT/2;
-		cuerpos[i].vel.y=cuerpos[i].vel.y+cuerpos[i].acel.y*deltaT/2;
-		cuerpos[i].vel.z=cuerpos[i].vel.z+cuerpos[i].acel.z*deltaT/2;
+		c = bodies[i];
+		bodies[i].vel.x=bodies[i].vel.x+bodies[i].acel.x*deltaT/2;
+		bodies[i].vel.y=bodies[i].vel.y+bodies[i].acel.y*deltaT/2;
+		bodies[i].vel.z=bodies[i].vel.z+bodies[i].acel.z*deltaT/2;
 	}
 }
 
-void updPosFey(Cuerpo cuerpos[], int arraySize, double deltaT){
+void updPosFey(Body bodies[], int arraySize, double deltaT){
 	int i;
-	Cuerpo c;
+	Body c;
+	for (i=0;i<arraySize;i++){
+		c = bodies[i];
 	
-	for (i=0;i<arraySize;i++){
-		c = cuerpos[i];
-	
-		cuerpos[i].pos.x+=cuerpos[i].vel.x*deltaT;
-		cuerpos[i].pos.y+=cuerpos[i].vel.y*deltaT;
-		cuerpos[i].pos.z+=cuerpos[i].vel.z*deltaT;
+		bodies[i].pos.x+=bodies[i].vel.x*deltaT;
+		bodies[i].pos.y+=bodies[i].vel.y*deltaT;
+		bodies[i].pos.z+=bodies[i].vel.z*deltaT;
 		
 	}
 }
 
-void printData(Cuerpo cuerpos[], int arraySize, FILE *file, int dataType){
-	char out[1000]="",buffer[50];
+void printPosData(Body bodies[], int arraySize, FILE *file, int dataType){
+	char out[1000]="",buffer[60];
 	int i = 0;	
 	for (;i<arraySize;i++){
-			sprintf(buffer,"%11.3e \t %11.3e \t",cuerpos[i].pos.x,cuerpos[i].pos.y);
-			strcat(out,buffer);
-		
+		sprintf(buffer,"%11.3e \t %11.3e \t",bodies[i].pos.x,bodies[i].pos.y);
+		strcat(out,buffer);
 	}
 	strcat(out,"\n");
 	fwrite(out,1,strlen(out),file);
-	
 
 }
 
-void updPosOld(Cuerpo cuerpos[], int arraySize, double deltaT){
+void printEnerData(Body bodies[], int arraySize, FILE *file, int dataType){
+	char out[1000]="",buffer[60];
+	sprintf(buffer,"%11.3e \t ",totalEnergy(bodies,arraySize));
+	strcat(out,buffer);
+	strcat(out,"\n");
+	fwrite(out,1,strlen(out),file);
+
+}
+
+void updPosOld(Body bodies[], int arraySize, double deltaT){
 	int i;
-	Cuerpo c;
+	Body c;
 	char out[1000]="",buffer[50];	
 	
 	for (i=0;i<arraySize;i++){
-		c = cuerpos[i];
+		c = bodies[i];
 	
-		cuerpos[i].pos.x+=cuerpos[i].vel.x*deltaT+cuerpos[i].acel.x*deltaT*deltaT/2;
-		cuerpos[i].pos.y+=cuerpos[i].vel.y*deltaT+cuerpos[i].acel.y*deltaT*deltaT/2;
-		cuerpos[i].pos.z+=cuerpos[i].vel.z*deltaT+cuerpos[i].acel.z*deltaT*deltaT/2;
-		sprintf(buffer,"%11.3e \t %11.3e \t",cuerpos[i].pos.x,cuerpos[i].pos.y);
+		bodies[i].pos.x+=bodies[i].vel.x*deltaT+bodies[i].acel.x*deltaT*deltaT/2;
+		bodies[i].pos.y+=bodies[i].vel.y*deltaT+bodies[i].acel.y*deltaT*deltaT/2;
+		bodies[i].pos.z+=bodies[i].vel.z*deltaT+bodies[i].acel.z*deltaT*deltaT/2;
+		sprintf(buffer,"%11.3e \t %11.3e \t",bodies[i].pos.x,bodies[i].pos.y);
 		strcat(out,buffer);
 	}
 	printf("%s  \n",out);
 }
 
 
-void updVelOld(Cuerpo cuerpos[], int arraySize, double deltaT){
+void updVelOld(Body bodies[], int arraySize, double deltaT){
 	int i;
-	Cuerpo c;
+	Body c;
 	for (i=0;i<arraySize;i++){
-		c = cuerpos[i];
-		cuerpos[i].vel.x=cuerpos[i].vel.x+cuerpos[i].acel.x*deltaT;
-		cuerpos[i].vel.y=cuerpos[i].vel.y+cuerpos[i].acel.y*deltaT;
-		cuerpos[i].vel.z=cuerpos[i].vel.z+cuerpos[i].acel.z*deltaT;
+		c = bodies[i];
+		bodies[i].vel.x+=bodies[i].acel.x*deltaT;
+		bodies[i].vel.y+=bodies[i].acel.y*deltaT;
+		bodies[i].vel.z+=bodies[i].acel.z*deltaT;
 	}
 }
 
-double totalEnergy(Cuerpo cuerpos[], int cuerposSize){
-	return kinEnergy(cuerpos,cuerposSize)+potEnery(cuerpos,cuerposSize);	
+double totalEnergy(Body bodies[], int bodiesSize){
+	return kinEnergy(bodies,bodiesSize)+potEnery(bodies,bodiesSize);	
 }
 
-double kinEnergy(Cuerpo cuerpos[], int cuerposSize){
+double kinEnergy(Body bodies[], int bodiesSize){
 	int i=0;
 	double ener=0;
-	Cuerpo cuerpo;
+	Body cuerpo;
 	double vel=0;
-	for(;i<cuerposSize;i++){
-		cuerpo=cuerpos[i];
+	for(;i<bodiesSize;i++){
+		cuerpo=bodies[i];
 		vel=vectorModulo(cuerpo.vel);
 		ener+=cuerpo.masa*vel*vel/2;
 	}
 	return ener;
 }
 
-double potEnery(Cuerpo cuerpos[], int cuerposSize){
+double potEnery(Body bodies[], int bodiesSize){
 	int i=0,j=0;
 	double ener=0;
 	double dist;
 	double masa;
-	for(;i<cuerposSize;i++){
-		masa=cuerpos[i].masa;
-		for(j=i+1;j<cuerposSize;j++){
-			dist=vectoresDist(cuerpos[i].pos,cuerpos[j].pos);
-			ener+=-CONSTANTE_GRAVITACION*masa*cuerpos[j].masa/dist;
+	for(;i<bodiesSize;i++){
+		masa=bodies[i].masa;
+		for(j=i+1;j<bodiesSize;j++){
+			dist=vectoresDist(bodies[i].pos,bodies[j].pos);
+			ener+=-CONSTANTE_GRAVITACION*masa*bodies[j].masa/dist;
 		}
 	}
 	return ener;
