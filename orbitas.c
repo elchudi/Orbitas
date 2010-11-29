@@ -370,3 +370,38 @@ double potEnery(Body bodies[], int bodiesSize){
 	return ener;
 }
 
+Vector totalAngMom(Body bodies[], int bodiesSize){
+	Vector toRet;
+	toRet.x=0;
+	toRet.y=0;
+	toRet.z=0;
+		
+	
+}
+
+Vector crossProd(Vector x, Vector y){
+	Vector toRet;
+	
+	toRet.x=x.y*y.z-x.z*y.y;
+	toRet.y=x.z*y.x-x.x*y.z;
+	toRet.z=x.x*y.y-x.y*y.x;	
+	
+	return toRet;
+}
+
+Vector vectorSum(Vector x, Vector y){
+	Vector toRet;
+	toRet.x=x.x+y.x;
+	toRet.y=x.y+y.y;
+	toRet.z=x.z+y.z;
+	
+}
+
+
+/*esto como mierda se usa eh?*/
+void vectorInitToZero(Vector *x){
+	*x.x=0;
+	*x.y=0;
+	*x.z=0;
+}
+
