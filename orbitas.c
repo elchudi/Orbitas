@@ -47,11 +47,17 @@ void updPosOld(Cuerpo cuerpos[], int arraySize, double deltaT);
 void updVelOld(Cuerpo cuerpos[], int arraySize, double deltaT);
 
 void updAcelFey(Cuerpo cuerpos[], int arraySize);
-void updPosFey(Cuerpo cuerpos[], int arraySize, double deltaT, FILE *file ,int print);
+void updPosFey(Cuerpo cuerpos[], int arraySize, double deltaT);
 void updVelFey(Cuerpo cuerpos[], int arraySize, double deltaT);
 void updVelFeyInit(Cuerpo cuerpos[], int arraySize, double deltaT);
 
 double CONSTANTE_GRAVITACION=6.67428e-11;
+
+double totalEnergy(Cuerpo cuerpos[], int cuerposSize);
+double kinEnergy(Cuerpo cuerpos[], int cuerposSize);
+double potEnery(Cuerpo cuerpos[], int cuerposSize);
+
+void printData(Cuerpo cuerpos[], int arraySize, FILE *file, int dataType);
 
 int main(void){
 	/*velocidades y posiciones iniciales de dos particulas*/
@@ -61,13 +67,15 @@ int main(void){
 	int steps,cuerposSize;
 	double deltaT;
 	int cont;
-	FILE *file;
+	FILE *file,*enerFile;
 	int fileOutInterval;
 	int amountOfPoints;	
+	int outData;	
 
 	file = fopen("outFey","w"); 
-	if(file == NULL) {
-        	perror("failed to open sample.txt");
+	enerFile = fopen("ener","w");	
+	if(file == NULL || enerFile == NULL)  {
+        	perror("failed to open some file");
         	return EXIT_FAILURE;
 	}
 
@@ -150,11 +158,14 @@ int main(void){
 	updVelFeyInit(cuerpos,cuerposSize,cuerposSize);
 
 	for (cont=0;cont<steps;cont++){
-		updPosFey(cuerpos, cuerposSize, deltaT, file,!(cont%fileOutInterval));
+		outData=!(cont%fileOutInterval);
+		updPosFey(cuerpos, cuerposSize, deltaT);
 		updF(cuerpos, cuerposSize);
 		updAcelFey(cuerpos,cuerposSize);
 		updVelFey(cuerpos, cuerposSize, deltaT);
-
+		if(outData){
+			printData(cuerpos,cuerposSize,file,0);
+		}
 		/*
 		updAcelOld(cuerpos,cuerposSize);
 		updVelOld(cuerpos, cuerposSize, deltaT);
@@ -287,10 +298,9 @@ void updVelFeyInit(Cuerpo cuerpos[], int arraySize, double deltaT){
 	}
 }
 
-void updPosFey(Cuerpo cuerpos[], int arraySize, double deltaT, FILE *file, int print){
+void updPosFey(Cuerpo cuerpos[], int arraySize, double deltaT){
 	int i;
 	Cuerpo c;
-	char out[1000]="",buffer[50];	
 	
 	for (i=0;i<arraySize;i++){
 		c = cuerpos[i];
@@ -298,17 +308,22 @@ void updPosFey(Cuerpo cuerpos[], int arraySize, double deltaT, FILE *file, int p
 		cuerpos[i].pos.x+=cuerpos[i].vel.x*deltaT;
 		cuerpos[i].pos.y+=cuerpos[i].vel.y*deltaT;
 		cuerpos[i].pos.z+=cuerpos[i].vel.z*deltaT;
-		if(print){
-			sprintf(buffer,"%11.3e \t %11.3e \t",cuerpos[i].pos.x,cuerpos[i].pos.y);
-			strcat(out,buffer);
-		}
 		
 	}
-	if(print){
-		strcat(out,"\n");
-		fwrite(out,1,strlen(out),file);
+}
+
+void printData(Cuerpo cuerpos[], int arraySize, FILE *file, int dataType){
+	char out[1000]="",buffer[50];
+	int i = 0;	
+	for (;i<arraySize;i++){
+			sprintf(buffer,"%11.3e \t %11.3e \t",cuerpos[i].pos.x,cuerpos[i].pos.y);
+			strcat(out,buffer);
+		
 	}
- 	/*	printf("%s  \n",out);*/
+	strcat(out,"\n");
+	fwrite(out,1,strlen(out),file);
+	
+
 }
 
 void updPosOld(Cuerpo cuerpos[], int arraySize, double deltaT){
@@ -339,3 +354,36 @@ void updVelOld(Cuerpo cuerpos[], int arraySize, double deltaT){
 		cuerpos[i].vel.z=cuerpos[i].vel.z+cuerpos[i].acel.z*deltaT;
 	}
 }
+
+double totalEnergy(Cuerpo cuerpos[], int cuerposSize){
+	return kinEnergy(cuerpos,cuerposSize)+potEnery(cuerpos,cuerposSize);	
+}
+
+double kinEnergy(Cuerpo cuerpos[], int cuerposSize){
+	int i=0;
+	double ener=0;
+	Cuerpo cuerpo;
+	double vel=0;
+	for(;i<cuerposSize;i++){
+		cuerpo=cuerpos[i];
+		vel=vectorModulo(cuerpo.vel);
+		ener+=cuerpo.masa*vel*vel/2;
+	}
+	return ener;
+}
+
+double potEnery(Cuerpo cuerpos[], int cuerposSize){
+	int i=0,j=0;
+	double ener=0;
+	double dist;
+	double masa;
+	for(;i<cuerposSize;i++){
+		masa=cuerpos[i].masa;
+		for(j=i+1;j<cuerposSize;j++){
+			dist=vectoresDist(cuerpos[i].pos,cuerpos[j].pos);
+			ener+=-CONSTANTE_GRAVITACION*masa*cuerpos[j].masa/dist;
+		}
+	}
+	return ener;
+}
+
