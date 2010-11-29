@@ -1,7 +1,7 @@
 /*
 Programa para calcular orbitas de planetas:
 TODO LIST
-_ Mejorar los calculos de fuerzas y/o velocidades (Feynman tiene una linda explicacion)
+_ Mejorar los calculos de forces y/o velocidades (Feynman tiene una linda explicacion)
 _ Hacer que se lean de ficheros externos los datos de los problemas
 _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 */
@@ -37,7 +37,7 @@ double vectorCoorModulo(double x1, double y1, double z1);
 void updF(Body bodies[],int arraySize);
 
 
-double fuerzaGrav(Body c1, Body c2);
+double forceGrav(Body c1, Body c2);
 
 void updAcelOld(Body bodies[], int arraySize);
 void updPosOld(Body bodies[], int arraySize, double deltaT);
@@ -196,7 +196,7 @@ double bodiesDist(Body c1, Body c2){
 	return vectoresDist(c1.pos,c2.pos);
 }
 
-double fuerzaGrav(Body c1, Body c2){
+double forceGrav(Body c1, Body c2){
 	double toReturn;
 	toReturn= c1.masa*c2.masa*CONSTANTE_GRAVITACION/pow(bodiesDist(c1,c2),2);
 	return toReturn;
@@ -209,7 +209,7 @@ void updF(Body bodies[], int arraySize){
 	double distancia;
 
 	/*
-	Se limpian las fuerzas de la iteracion anterior
+	Se limpian las forces de la iteracion anterior
 	*/
 	for(j=0;j<arraySize;j++){
 		bodies[j].fAct.x=0;
@@ -219,7 +219,7 @@ void updF(Body bodies[], int arraySize){
 
 	for(j=0;j<arraySize;j++){
 		for (k=j+1;k<arraySize;k++){
-			force = fuerzaGrav(bodies[j],bodies[k]);
+			force = forceGrav(bodies[j],bodies[k]);
 			dirR=vectoresResta(bodies[j].pos,bodies[k].pos);
 			distancia=vectorModulo(dirR);	
 			
