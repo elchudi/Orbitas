@@ -2,5 +2,6 @@
 rm ener
 rm outFey
 gcc -Wall -c -ansi -pedantic orbitas.c 
-gcc orbitas.o -o exe -lm
+gcc -Wall -c -ansi -pedantic vectorAlgebra.c 
+gcc  -o exe orbitas.o vectorAlgebra.o -lm
 ./exe 
