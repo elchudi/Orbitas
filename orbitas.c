@@ -10,6 +10,7 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 #include <math.h>
 #include <stdlib.h>
 
+
 typedef struct{
 	double x;
 	double y;
