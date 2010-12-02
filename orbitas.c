@@ -9,7 +9,7 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include <sys/time.h>
+#include <time.h>
 #include "vector.h"
 #include "vectorAlgebra.h"
 
@@ -63,9 +63,10 @@ int main(void){
 	int fileOutInterval;
 	int amountOfPoints;	
 	int outData;	
-    struct timeval timeStart, timeEnd;
-    gettimeofday(&timeStart,NULL);
-	
+    clock_t start, end;
+    double runTime;
+    start = clock();
+     
     file = fopen("outFey","w"); 
 	enerFile = fopen("ener","w");	
 	if(file == NULL || enerFile == NULL)  {
@@ -155,9 +156,12 @@ int main(void){
 
 	fclose(file);
 	fclose(enerFile);
-    gettimeofday(&timeEnd,NULL);
-    printf("Total Running Time (secs): %ld.%06ld\n",(timeEnd.tv_usec-timeStart.tv_usec)>0?timeEnd.tv_sec-timeStart.tv_sec:timeEnd.tv_sec-1-timeStart.tv_sec,(timeEnd.tv_usec-timeStart.tv_usec)>0?timeEnd.tv_usec-timeStart.tv_usec:timeStart.tv_usec-timeEnd.tv_usec);
-	return 0;
+	end = clock();
+    runTime = (end - start) / (double) CLOCKS_PER_SEC ;
+    printf ("Run time is %g seconds\n", runTime);
+
+    
+    return 0;
 }
 
 double bodiesDist(Body c1, Body c2){
