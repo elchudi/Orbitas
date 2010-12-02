@@ -303,6 +303,8 @@ double totalEnergy(Body bodies[], int bodiesSize){
 	return kinEnergy(bodies,bodiesSize)+potEnery(bodies,bodiesSize);	
 }
 
+
+
 double kinEnergy(Body bodies[], int bodiesSize){
 	int i=0;
 	double ener=0;

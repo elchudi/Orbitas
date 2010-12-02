@@ -4,6 +4,7 @@
 #include "vectorAlgebra.h"
 
 
+
 double vectorCoorModulo(double x1, double y1, double z1){
 	float dist;
 	dist=0.f;
@@ -29,11 +30,9 @@ double vectoresDist(Vector vec1, Vector vec2){
 
 Vector crossProd(Vector x, Vector y){
 	Vector toRet;
-	
 	toRet.x=x.y*y.z-x.z*y.y;
 	toRet.y=x.z*y.x-x.x*y.z;
 	toRet.z=x.x*y.y-x.y*y.x;	
-	
 	return toRet;
 }
 
