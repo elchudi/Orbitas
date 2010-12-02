@@ -62,7 +62,6 @@ int main(void){
 	FILE *file,*enerFile;
 	int fileOutInterval;
 	int amountOfPoints;	
-	int outData;	
     clock_t start, end;
     double runTime;
     start = clock();
@@ -75,54 +74,44 @@ int main(void){
 	}
 
 	
-	deltaT = 1604;
+	deltaT = 54;
 	steps = 620000;
-	amountOfPoints = 77037;	
+	amountOfPoints = 177037;	
 	fileOutInterval = steps/amountOfPoints;
-
-   
 
 	/*Data Init*/
 	/*Sun*/
-	pos1.x = 0;
-	pos1.y = 0;
-	pos1.z = 0;	
-	vel1.x = 0;
-	vel1.y = 0;
-	vel1.z = 0;
+    vectorInitToZero(&pos1);
+    vectorInitToZero(&vel1);
 	sol.pos = pos1;
 	sol.vel = vel1;
 	sol.masa = 1.989e30;	
 	
 	/*Earth*/
+    vectorInitToZero(&pos1);
+    vectorInitToZero(&vel1);
 	pos1.x = 1.496e11;
-	pos1.y = 0;
-	pos1.z = 0;
-	vel1.x = 0;
 	vel1.y = 30000;
-	vel1.z = 0;
 	tie.masa = 5.9736e24;	
 	tie.pos = pos1;
 	tie.vel = vel1;
 
 	/*Moon*/
+    vectorInitToZero(&pos1);
+    vectorInitToZero(&vel1);
 	pos1.x = tie.pos.x+3.84339e8;
 	pos1.y = tie.pos.y;
 	pos1.z = tie.pos.z;
-	vel1.x = 0;
 	vel1.y = tie.vel.y+1000;
-	vel1.z = 0;
 	luna.masa = 7.3477e22;
 	luna.pos = pos1;
 	luna.vel = vel1;
 
 	/*venus*/
+    vectorInitToZero(&pos1);
+    vectorInitToZero(&vel1);
 	pos1.x = 1.082e11;
-	pos1.y = 0;
-	pos1.z = 0;
-	vel1.x = 0;
 	vel1.y = 35021;
-	vel1.z = 0;
 	venus.masa = 4.869e24;	
 	venus.pos = pos1;
 	venus.vel = vel1;
@@ -137,12 +126,11 @@ int main(void){
 	updVelFeyInit(bodies,bodiesSize,bodiesSize);
 
 	for (cont=0;cont<steps;cont++){
-		outData = !(cont%fileOutInterval);
 		updPosFey(bodies, bodiesSize, deltaT);
 		updF(bodies, bodiesSize);
 		updAcelFey(bodies,bodiesSize);
 		updVelFey(bodies, bodiesSize, deltaT);
-		if(outData){
+		if(!(cont%fileOutInterval)){
 			printPosData(bodies,bodiesSize,file,FEYNMAN_METHOD);
 			printEnerData(bodies,bodiesSize,enerFile,FEYNMAN_METHOD);
 		}
@@ -159,7 +147,6 @@ int main(void){
 	end = clock();
     runTime = (end - start) / (double) CLOCKS_PER_SEC ;
     printf ("Run time is %g seconds\n", runTime);
-
     
     return 0;
 }
@@ -193,7 +180,7 @@ void updF(Body bodies[], int arraySize){
 		for (k=j+1;k<arraySize;k++){
 			force = forceGrav(bodies[j],bodies[k]);
     		dirR = vectoresResta(&bodies[j].pos,&bodies[k].pos);
-			distancia=vectorModulo(&dirR);	
+			distancia = vectorModulo(&dirR);	
 			
 			/*es un menos por que el vector apunta de k hacia j*/
 			bodies[j].fAct.x += -force*dirR.x/distancia;	
@@ -230,9 +217,9 @@ void updVelFey(Body bodies[], int arraySize, double deltaT){
 	Body c;
 	for (i=0;i<arraySize;i++){
 		c = bodies[i];
-		bodies[i].vel.x = bodies[i].vel.x+bodies[i].acel.x*deltaT;
-		bodies[i].vel.y = bodies[i].vel.y+bodies[i].acel.y*deltaT;
-		bodies[i].vel.z = bodies[i].vel.z+bodies[i].acel.z*deltaT;
+		bodies[i].vel.x = bodies[i].vel.x + bodies[i].acel.x*deltaT;
+		bodies[i].vel.y = bodies[i].vel.y + bodies[i].acel.y*deltaT;
+		bodies[i].vel.z = bodies[i].vel.z + bodies[i].acel.z*deltaT;
 	}
 }
 
@@ -241,9 +228,9 @@ void updVelFeyInit(Body bodies[], int arraySize, double deltaT){
 	Body c;
 	for (i=0;i<arraySize;i++){
 		c = bodies[i];
-		bodies[i].vel.x = bodies[i].vel.x+bodies[i].acel.x*deltaT/2;
-		bodies[i].vel.y = bodies[i].vel.y+bodies[i].acel.y*deltaT/2;
-		bodies[i].vel.z = bodies[i].vel.z+bodies[i].acel.z*deltaT/2;
+		bodies[i].vel.x = bodies[i].vel.x + bodies[i].acel.x*deltaT/2;
+		bodies[i].vel.y = bodies[i].vel.y + bodies[i].acel.y*deltaT/2;
+		bodies[i].vel.z = bodies[i].vel.z + bodies[i].acel.z*deltaT/2;
 	}
 }
 
@@ -264,7 +251,7 @@ void printPosData(Body bodies[], int arraySize, FILE *file, int dataType){
 	char out[1000]="",buffer[60];
 	int i = 0;	
 	for (;i<arraySize;i++){
-		sprintf(buffer,"%11.3e \t %11.3e \t",bodies[i].pos.x,bodies[i].pos.y);
+		sprintf(buffer,"%11.3e \t %11.3e \t",bodies[i].pos.x/1000000, bodies[i].pos.y/1000000);
 		strcat(out,buffer);
 	}
 	strcat(out,"\n");
