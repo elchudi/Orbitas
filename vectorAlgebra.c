@@ -46,9 +46,9 @@ Vector vectorSum(Vector x, Vector y){
 
 
 /*esto como mierda se usa eh?*/
-/*void vectorInitToZero(Vector *x){
-	*x.x=0;
-	*x.y=0;
-	*x.z=0;
-}*/
+void vectorInitToZero(Vector *x){
+	(*x).x=0;
+	(*x).y=0;
+	(*x).z=0;
+}
 
