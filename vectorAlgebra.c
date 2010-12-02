@@ -4,11 +4,11 @@
 #include "vectorAlgebra.h"
 
 double vectorCoorModulo(double *x1, double *y1, double *z1){
-	return sqrt((*x1)*(*x1)+(*y1)*(*y1)+(*z1)*(*z1));
+	return sqrt((*x1)*(*x1) + (*y1)*(*y1) + (*z1)*(*z1));
 }
 
 double vectorModulo (Vector *vec){
-	return vectorCoorModulo(&(*vec).x,&(*vec).y,&(*vec).z);
+	return vectorCoorModulo(&(*vec).x, &(*vec).y, &(*vec).z);
 }
 
 Vector vectoresResta(Vector *vec1, Vector *vec2){
@@ -21,7 +21,7 @@ Vector vectoresResta(Vector *vec1, Vector *vec2){
 
 /*se puede d*/
 double vectoresDist(Vector *vec1, Vector *vec2){
-    Vector aux =vectoresResta(vec1,vec2);
+    Vector aux = vectoresResta(vec1,vec2);
     return vectorModulo(&aux);
 }
 
