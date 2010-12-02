@@ -74,9 +74,9 @@ int main(void){
 	}
 
 	
-	deltaT=16004;
-	steps=5200000;
-	amountOfPoints=176;	
+	deltaT=1604;
+	steps=620000;
+	amountOfPoints=77037;	
 	fileOutInterval = steps/amountOfPoints;
 	
 	/*Data Init*/
