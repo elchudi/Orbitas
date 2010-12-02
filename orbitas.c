@@ -9,6 +9,7 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "vector.h"
 #include "vectorAlgebra.h"
 
@@ -51,7 +52,7 @@ void printEnerData(Body bodies[], int arraySize, FILE *file, int dataType);
 
 int main(void){
 	/*velocidades y posiciones iniciales de dos particulas*/
-	Vector pos1, vel1;	
+    Vector pos1, vel1;	
 	Body sol,tie,luna,venus;
 	int steps;
 	int const bodiesSize=4;
@@ -62,8 +63,10 @@ int main(void){
 	int fileOutInterval;
 	int amountOfPoints;	
 	int outData;	
-
-	file = fopen("outFey","w"); 
+    struct timeval timeStart, timeEnd;
+    gettimeofday(&timeStart,NULL);
+	
+    file = fopen("outFey","w"); 
 	enerFile = fopen("ener","w");	
 	if(file == NULL || enerFile == NULL)  {
         	perror("failed to open some file");
@@ -71,9 +74,9 @@ int main(void){
 	}
 
 	
-	deltaT=1600004;
-	steps=1200000;
-	amountOfPoints=3176;	
+	deltaT=16004;
+	steps=5200000;
+	amountOfPoints=176;	
 	fileOutInterval = steps/amountOfPoints;
 	
 	/*Data Init*/
@@ -150,6 +153,8 @@ int main(void){
 
 	fclose(file);
 	fclose(enerFile);
+    gettimeofday(&timeEnd,NULL);
+    printf("Total Running Time (secs): %ld.%06ld\n",(timeEnd.tv_usec-timeStart.tv_usec)>0?timeEnd.tv_sec-timeStart.tv_sec:timeEnd.tv_sec-1-timeStart.tv_sec,(timeEnd.tv_usec-timeStart.tv_usec)>0?timeEnd.tv_usec-timeStart.tv_usec:timeStart.tv_usec-timeEnd.tv_usec);
 	return 0;
 }
 
