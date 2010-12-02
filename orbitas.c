@@ -74,69 +74,69 @@ int main(void){
 	}
 
 	
-	deltaT=1604;
-	steps=620000;
-	amountOfPoints=77037;	
+	deltaT = 1604;
+	steps = 620000;
+	amountOfPoints = 77037;	
 	fileOutInterval = steps/amountOfPoints;
 
    
 
 	/*Data Init*/
 	/*Sun*/
-	pos1.x=0;
-	pos1.y=0;
-	pos1.z=0;	
-	vel1.x=0;
-	vel1.y=0;
-	vel1.z=0;
-	sol.pos=pos1;
-	sol.vel=vel1;
-	sol.masa=1.989e30;	
+	pos1.x = 0;
+	pos1.y = 0;
+	pos1.z = 0;	
+	vel1.x = 0;
+	vel1.y = 0;
+	vel1.z = 0;
+	sol.pos = pos1;
+	sol.vel = vel1;
+	sol.masa = 1.989e30;	
 	
 	/*Earth*/
-	pos1.x=1.496e11;
-	pos1.y=0;
-	pos1.z=0;
-	vel1.x=0;
-	vel1.y=30000;
-	vel1.z=0;
-	tie.masa=5.9736e24;	
-	tie.pos=pos1;
-	tie.vel=vel1;
+	pos1.x = 1.496e11;
+	pos1.y = 0;
+	pos1.z = 0;
+	vel1.x = 0;
+	vel1.y = 30000;
+	vel1.z = 0;
+	tie.masa = 5.9736e24;	
+	tie.pos = pos1;
+	tie.vel = vel1;
 
 	/*Moon*/
-	pos1.x=tie.pos.x+3.84339e8;
-	pos1.y=tie.pos.y;
-	pos1.z=tie.pos.z;
-	vel1.x=0;
-	vel1.y=tie.vel.y+1000;
-	vel1.z=0;
-	luna.masa=7.3477e22;
-	luna.pos=pos1;
-	luna.vel=vel1;
+	pos1.x = tie.pos.x+3.84339e8;
+	pos1.y = tie.pos.y;
+	pos1.z = tie.pos.z;
+	vel1.x = 0;
+	vel1.y = tie.vel.y+1000;
+	vel1.z = 0;
+	luna.masa = 7.3477e22;
+	luna.pos = pos1;
+	luna.vel = vel1;
 
 	/*venus*/
-	pos1.x=1.082e11;
-	pos1.y=0;
-	pos1.z=0;
-	vel1.x=0;
-	vel1.y=35021;
-	vel1.z=0;
-	venus.masa=4.869e24;	
-	venus.pos=pos1;
-	venus.vel=vel1;
+	pos1.x = 1.082e11;
+	pos1.y = 0;
+	pos1.z = 0;
+	vel1.x = 0;
+	vel1.y = 35021;
+	vel1.z = 0;
+	venus.masa = 4.869e24;	
+	venus.pos = pos1;
+	venus.vel = vel1;
 		
-	bodies[0]=sol;
-	bodies[1]=tie;	
-	bodies[2]=luna;
-	bodies[3]=venus;
+	bodies[0] = sol;
+	bodies[1] = tie;	
+	bodies[2] = luna;
+	bodies[3] = venus;
 	
 	/*init feynman computation*/
 	updF(bodies,bodiesSize);
 	updVelFeyInit(bodies,bodiesSize,bodiesSize);
 
 	for (cont=0;cont<steps;cont++){
-		outData=!(cont%fileOutInterval);
+		outData = !(cont%fileOutInterval);
 		updPosFey(bodies, bodiesSize, deltaT);
 		updF(bodies, bodiesSize);
 		updAcelFey(bodies,bodiesSize);
