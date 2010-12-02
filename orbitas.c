@@ -79,7 +79,8 @@ int main(void){
 	amountOfPoints=77037;	
 	fileOutInterval = steps/amountOfPoints;
 
-    
+   
+
 	/*Data Init*/
 	/*Sun*/
 	pos1.x=0;
