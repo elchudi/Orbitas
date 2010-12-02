@@ -47,3 +47,4 @@ void vectorInitToZero(Vector *x){
 	(*x).z = 0;
 }
 
+
