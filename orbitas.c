@@ -186,17 +186,17 @@ void updF(Body bodies[], int arraySize){
 	for(j=0;j<arraySize;j++){
 		for (k=j+1;k<arraySize;k++){
 			force = forceGrav(bodies[j],bodies[k]);
-			dirR=vectoresResta(&bodies[j].pos,&bodies[k].pos);
+    		dirR = vectoresResta(&bodies[j].pos,&bodies[k].pos);
 			distancia=vectorModulo(&dirR);	
 			
 			/*es un menos por que el vector apunta de k hacia j*/
-			bodies[j].fAct.x+=-force*dirR.x/distancia;	
-			bodies[j].fAct.y+=-force*dirR.y/distancia;	
-			bodies[j].fAct.z+=-force*dirR.z/distancia;	
+			bodies[j].fAct.x += -force*dirR.x/distancia;	
+			bodies[j].fAct.y += -force*dirR.y/distancia;	
+			bodies[j].fAct.z += -force*dirR.z/distancia;	
 	
-			bodies[k].fAct.x+=force*dirR.x/distancia;	
-			bodies[k].fAct.y+=force*dirR.y/distancia;	
-			bodies[k].fAct.z+=force*dirR.z/distancia;	
+			bodies[k].fAct.x += force*dirR.x/distancia;	
+			bodies[k].fAct.y += force*dirR.y/distancia;	
+			bodies[k].fAct.z += force*dirR.z/distancia;	
 		}	
 	}
 }
@@ -204,18 +204,18 @@ void updF(Body bodies[], int arraySize){
 void updAcelOld(Body bodies[], int arraySize){
 	int i;
 	for(i = 0; i<arraySize;i++){
-		bodies[i].acel.x=bodies[i].fAct.x/bodies[i].masa;
-		bodies[i].acel.y=bodies[i].fAct.y/bodies[i].masa;
-		bodies[i].acel.z=bodies[i].fAct.z/bodies[i].masa;
+		bodies[i].acel.x = bodies[i].fAct.x/bodies[i].masa;
+		bodies[i].acel.y = bodies[i].fAct.y/bodies[i].masa;
+		bodies[i].acel.z = bodies[i].fAct.z/bodies[i].masa;
 	}
 }
 
 void updAcelFey(Body bodies[], int arraySize){
 	int i;
 	for(i = 0; i<arraySize;i++){
-		bodies[i].acel.x=bodies[i].fAct.x/bodies[i].masa;
-		bodies[i].acel.y=bodies[i].fAct.y/bodies[i].masa;
-		bodies[i].acel.z=bodies[i].fAct.z/bodies[i].masa;
+		bodies[i].acel.x = bodies[i].fAct.x/bodies[i].masa;
+		bodies[i].acel.y = bodies[i].fAct.y/bodies[i].masa;
+		bodies[i].acel.z = bodies[i].fAct.z/bodies[i].masa;
 	}
 }
 
@@ -224,9 +224,9 @@ void updVelFey(Body bodies[], int arraySize, double deltaT){
 	Body c;
 	for (i=0;i<arraySize;i++){
 		c = bodies[i];
-		bodies[i].vel.x=bodies[i].vel.x+bodies[i].acel.x*deltaT;
-		bodies[i].vel.y=bodies[i].vel.y+bodies[i].acel.y*deltaT;
-		bodies[i].vel.z=bodies[i].vel.z+bodies[i].acel.z*deltaT;
+		bodies[i].vel.x = bodies[i].vel.x+bodies[i].acel.x*deltaT;
+		bodies[i].vel.y = bodies[i].vel.y+bodies[i].acel.y*deltaT;
+		bodies[i].vel.z = bodies[i].vel.z+bodies[i].acel.z*deltaT;
 	}
 }
 
@@ -235,9 +235,9 @@ void updVelFeyInit(Body bodies[], int arraySize, double deltaT){
 	Body c;
 	for (i=0;i<arraySize;i++){
 		c = bodies[i];
-		bodies[i].vel.x=bodies[i].vel.x+bodies[i].acel.x*deltaT/2;
-		bodies[i].vel.y=bodies[i].vel.y+bodies[i].acel.y*deltaT/2;
-		bodies[i].vel.z=bodies[i].vel.z+bodies[i].acel.z*deltaT/2;
+		bodies[i].vel.x = bodies[i].vel.x+bodies[i].acel.x*deltaT/2;
+		bodies[i].vel.y = bodies[i].vel.y+bodies[i].acel.y*deltaT/2;
+		bodies[i].vel.z = bodies[i].vel.z+bodies[i].acel.z*deltaT/2;
 	}
 }
 
@@ -247,9 +247,9 @@ void updPosFey(Body bodies[], int arraySize, double deltaT){
 	for (i=0;i<arraySize;i++){
 		c = bodies[i];
 	
-		bodies[i].pos.x+=bodies[i].vel.x*deltaT;
-		bodies[i].pos.y+=bodies[i].vel.y*deltaT;
-		bodies[i].pos.z+=bodies[i].vel.z*deltaT;
+		bodies[i].pos.x += bodies[i].vel.x*deltaT;
+		bodies[i].pos.y += bodies[i].vel.y*deltaT;
+		bodies[i].pos.z += bodies[i].vel.z*deltaT;
 		
 	}
 }
@@ -283,10 +283,10 @@ void updPosOld(Body bodies[], int arraySize, double deltaT){
 	for (i=0;i<arraySize;i++){
 		c = bodies[i];
 	
-		bodies[i].pos.x+=bodies[i].vel.x*deltaT+bodies[i].acel.x*deltaT*deltaT/2;
-		bodies[i].pos.y+=bodies[i].vel.y*deltaT+bodies[i].acel.y*deltaT*deltaT/2;
-		bodies[i].pos.z+=bodies[i].vel.z*deltaT+bodies[i].acel.z*deltaT*deltaT/2;
-		sprintf(buffer,"%11.3e \t %11.3e \t",bodies[i].pos.x,bodies[i].pos.y);
+		bodies[i].pos.x += bodies[i].vel.x*deltaT + bodies[i].acel.x*deltaT*deltaT/2;
+		bodies[i].pos.y += bodies[i].vel.y*deltaT + bodies[i].acel.y*deltaT*deltaT/2;
+		bodies[i].pos.z += bodies[i].vel.z*deltaT + bodies[i].acel.z*deltaT*deltaT/2;
+		sprintf(buffer,"%11.3e \t %11.3e \t", bodies[i].pos.x, bodies[i].pos.y);
 		strcat(out,buffer);
 	}
 	printf("%s  \n",out);
@@ -298,9 +298,9 @@ void updVelOld(Body bodies[], int arraySize, double deltaT){
 	Body c;
 	for (i=0;i<arraySize;i++){
 		c = bodies[i];
-		bodies[i].vel.x+=bodies[i].acel.x*deltaT;
-		bodies[i].vel.y+=bodies[i].acel.y*deltaT;
-		bodies[i].vel.z+=bodies[i].acel.z*deltaT;
+		bodies[i].vel.x += bodies[i].acel.x*deltaT;
+		bodies[i].vel.y += bodies[i].acel.y*deltaT;
+		bodies[i].vel.z += bodies[i].acel.z*deltaT;
 	}
 }
 
@@ -311,28 +311,28 @@ double totalEnergy(Body bodies[], int bodiesSize){
 
 
 double kinEnergy(Body bodies[], int bodiesSize){
-	int i=0;
-	double ener=0;
+	int i = 0;
+	double ener = 0;
 	Body cuerpo;
-	double vel=0;
+	double vel = 0;
 	for(;i<bodiesSize;i++){
-		cuerpo=bodies[i];
-		vel=vectorModulo(&cuerpo.vel);
-		ener+=cuerpo.masa*vel*vel/2;
+		cuerpo = bodies[i];
+		vel = vectorModulo(&cuerpo.vel);
+		ener += cuerpo.masa*vel*vel/2;
 	}
 	return ener;
 }
 
 double potEnery(Body bodies[], int bodiesSize){
-	int i=0,j=0;
-	double ener=0;
+	int i = 0,j = 0;
+	double ener = 0;
 	double dist;
 	double masa;
 	for(;i<bodiesSize;i++){
-		masa=bodies[i].masa;
+		masa = bodies[i].masa;
 		for(j=i+1;j<bodiesSize;j++){
-			dist=vectoresDist(&bodies[i].pos,&bodies[j].pos);
-			ener+=-CONSTANTE_GRAVITACION*masa*bodies[j].masa/dist;
+			dist = vectoresDist(&bodies[i].pos,&bodies[j].pos);
+			ener += -CONSTANTE_GRAVITACION*masa*bodies[j].masa/dist;
 		}
 	}
 	return ener;
@@ -340,9 +340,9 @@ double potEnery(Body bodies[], int bodiesSize){
 
 Vector totalAngMom(Body bodies[], int bodiesSize){
 	Vector toRet;
-	toRet.x=0;
-	toRet.y=0;
-	toRet.z=0;
+	toRet.x = 0;
+	toRet.y = 0;
+	toRet.z = 0;
 		
 	return toRet;	
 }
