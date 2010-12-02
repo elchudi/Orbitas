@@ -154,7 +154,7 @@ int main(void){
 }
 
 double bodiesDist(Body c1, Body c2){
-	return vectoresDist(c1.pos,c2.pos);
+	return vectoresDist(&c1.pos,&c2.pos);
 }
 
 double forceGrav(Body c1, Body c2){
@@ -181,8 +181,8 @@ void updF(Body bodies[], int arraySize){
 	for(j=0;j<arraySize;j++){
 		for (k=j+1;k<arraySize;k++){
 			force = forceGrav(bodies[j],bodies[k]);
-			dirR=vectoresResta(bodies[j].pos,bodies[k].pos);
-			distancia=vectorModulo(dirR);	
+			dirR=vectoresResta(&bodies[j].pos,&bodies[k].pos);
+			distancia=vectorModulo(&dirR);	
 			
 			/*es un menos por que el vector apunta de k hacia j*/
 			bodies[j].fAct.x+=-force*dirR.x/distancia;	
@@ -312,7 +312,7 @@ double kinEnergy(Body bodies[], int bodiesSize){
 	double vel=0;
 	for(;i<bodiesSize;i++){
 		cuerpo=bodies[i];
-		vel=vectorModulo(cuerpo.vel);
+		vel=vectorModulo(&cuerpo.vel);
 		ener+=cuerpo.masa*vel*vel/2;
 	}
 	return ener;
@@ -326,7 +326,7 @@ double potEnery(Body bodies[], int bodiesSize){
 	for(;i<bodiesSize;i++){
 		masa=bodies[i].masa;
 		for(j=i+1;j<bodiesSize;j++){
-			dist=vectoresDist(bodies[i].pos,bodies[j].pos);
+			dist=vectoresDist(&bodies[i].pos,&bodies[j].pos);
 			ener+=-CONSTANTE_GRAVITACION*masa*bodies[j].masa/dist;
 		}
 	}

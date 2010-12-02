@@ -23,7 +23,8 @@ Vector vectoresResta(Vector *vec1, Vector *vec2){
 }
 
 double vectoresDist(Vector *vec1, Vector *vec2){
-	return vectorModulo(&(vectoresResta(vec1,vec2)));
+	Vector aux = vectoresResta(vec1,vec2);
+    return vectorModulo(&aux);
 }
 
 Vector crossProd(Vector x, Vector y){
