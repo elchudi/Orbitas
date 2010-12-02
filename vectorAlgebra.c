@@ -3,15 +3,12 @@
 #include "vector.h"
 #include "vectorAlgebra.h"
 
-double vectorCoorModulo(double x1, double y1, double z1){
-	float dist;
-	dist=0.f;
-	dist = sqrt(x1*x1+y1*y1+z1*z1);
-	return dist;	
+double vectorCoorModulo(double *x1, double *y1, double *z1){
+	return sqrt((*x1)*(*x1)+(*y1)*(*y1)+(*z1)*(*z1));
 }
 
 double vectorModulo (Vector *vec){
-	return vectorCoorModulo((*vec).x,(*vec).y,(*vec).z);
+	return vectorCoorModulo(&(*vec).x,&(*vec).y,&(*vec).z);
 }
 
 Vector vectoresResta(Vector *vec1, Vector *vec2){
@@ -27,11 +24,11 @@ double vectoresDist(Vector *vec1, Vector *vec2){
     return vectorModulo(&aux);
 }
 
-Vector crossProd(Vector x, Vector y){
+Vector crossProd(Vector *x, Vector *y){
 	Vector toRet;
-	toRet.x = x.y*y.z - x.z*y.y;
-	toRet.y = x.z*y.x - x.x*y.z;
-	toRet.z = x.x*y.y - x.y*y.x;	
+	toRet.x = (*x).y*(*y).z - (*x).z*(*y).y;
+	toRet.y = (*x).z*(*y).x - (*x).x*(*y).z;
+	toRet.z = (*x).x*(*y).y - (*x).y*(*y).x;	
 	return toRet;
 }
 
