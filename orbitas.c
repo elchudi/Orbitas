@@ -13,7 +13,7 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 #include "vector.h"
 #include "vectorAlgebra.h"
 
-#define qMax 30
+#define qMax 300
 
 typedef struct{
 	Vector pos;
@@ -51,18 +51,13 @@ double potEnery(Body bodies[], int qBodies);
 void printPosData(Body bodies[], int arraySize, FILE *file, int dataType);
 void printEnerData(Body bodies[], int arraySize, FILE *file, int dataType);
 
-
-
 int main(void){
-	/*velocidades y posiciones iniciales de dos particulas*/
-    Vector pos1, vel1;	
-	Body sol,tie,luna,venus;
 	int steps;
 	int qBodies = 0;
 	Body bodies[qMax];
 	double deltaT;
 	int cont;
-	FILE *file, *enerFile;
+	FILE *file, *enerFile, *fileData;
 	int fileOutInterval;
 	int amountOfPoints;	
     clock_t start, end;
@@ -75,58 +70,18 @@ int main(void){
         	perror("failed to open some file");
         	return EXIT_FAILURE;
 	}
+		
+	fileData = fopen("initData","r");
+    loadExtData(bodies, &qBodies, fileData);
 
-	
-	deltaT = 54;
-	steps = 620000;
-	amountOfPoints = 177037;	
+	deltaT = 540;
+	steps = 420000;
+	amountOfPoints = 77037;	
 	fileOutInterval = steps/amountOfPoints;
 
-	/*Data Init*/
-	/*Sun*/
-    vectorInitToZero(&pos1);
-    vectorInitToZero(&vel1);
-	sol.pos = pos1;
-	sol.vel = vel1;
-	sol.masa = 1.989e30;	
-	
-	/*Earth*/
-    vectorInitToZero(&pos1);
-    vectorInitToZero(&vel1);
-	pos1.x = 1.496e11;
-	vel1.y = 30000;
-	tie.masa = 5.9736e24;	
-	tie.pos = pos1;
-	tie.vel = vel1;
-
-	/*Moon*/
-    vectorInitToZero(&pos1);
-    vectorInitToZero(&vel1);
-	pos1.x = tie.pos.x+3.84339e8;
-	pos1.y = tie.pos.y;
-	pos1.z = tie.pos.z;
-	vel1.y = tie.vel.y+1000;
-	luna.masa = 7.3477e22;
-	luna.pos = pos1;
-	luna.vel = vel1;
-
-	/*venus*/
-    vectorInitToZero(&pos1);
-    vectorInitToZero(&vel1);
-	pos1.x = 1.082e11;
-	vel1.y = 35021;
-	venus.masa = 4.869e24;	
-	venus.pos = pos1;
-	venus.vel = vel1;
-		
-	bodies[0] = sol;
-	bodies[1] = tie;	
-	bodies[2] = luna;
-	bodies[3] = venus;
-	
 	/*init feynman computation*/
 	updF(bodies,qBodies);
-	updVelFeyInit(bodies,qBodies,qBodies);
+	updVelFeyInit(bodies,qBodies,deltaT);
 
 	for (cont=0;cont<steps;cont++){
 		updPosFey(bodies, qBodies, deltaT);
@@ -147,6 +102,7 @@ int main(void){
 
 	fclose(file);
 	fclose(enerFile);
+	fclose(fileData);
 	end = clock();
     runTime = (end - start) / (double) CLOCKS_PER_SEC ;
     printf ("Run time is %g seconds\n", runTime);
@@ -345,13 +301,11 @@ Vector totalAngMom(Body bodies[], int qBodies){
 
 void loadExtData(Body bodies[], int *qBodies, FILE *file){
     int i = 0;
-    Body b;
     rewind(file);
     fscanf(file,"%d\n",qBodies);
-    
     for (;i<*qBodies;i++){
-        b = bodies[i];
-        fscanf(file,"%lf%lf%lf%lf%lf%lf%lf\n",&b.masa,&b.pos.x,&b.pos.y,&b.pos.z,&b.vel.x,&b.vel.y,&b.vel.z);
+        fscanf(file,"%lf%lf%lf%lf%lf%lf%lf\n",&bodies[i].masa,&bodies[i].pos.x,&bodies[i].pos.y,&bodies[i].pos.z,&bodies[i].vel.x,&bodies[i].vel.y,&bodies[i].vel.z);
+        /*printf("%g %g %g %g %g %g %g\n",bodies[i].masa,bodies[i].pos.x,bodies[i].pos.y,bodies[i].pos.z,bodies[i].vel.x,bodies[i].vel.y,bodies[i].vel.z);*/
     }
 
 }
