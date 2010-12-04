@@ -16,27 +16,73 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 #define qMax 300
 
 typedef struct{
+	double xEnd;
+	double yEnd;
+	double zEnd;
+	double xStart;
+	double yStart;
+	double zStart;
+} Cuadrante;
+
+typedef struct{
 	Vector pos;
 	Vector vel;
 	Vector fAct;
 	Vector acel;
 	double masa;
+    Cuadrante *cuadrante;
 } Body;
 
+Cuadrante space(Body bodies[], int qBodies);
+
+Cuadrante space(Body bodies[], int qBodies){
+    Cuadrante c;
+    int i;
+    c.xStart = bodies[0].pos.x;
+    c.yStart = bodies[0].pos.y;
+    c.zStart = bodies[0].pos.z;
+    c.xEnd = bodies[0].pos.x;
+    c.yEnd = bodies[0].pos.y;
+    c.zEnd = bodies[0].pos.z;
+
+
+    for(i = 1; i < qBodies; i++){
+        if( c.xStart > bodies[i].pos.x )   c.xStart = bodies[i].pos.x;
+        if( c.yStart > bodies[i].pos.y )   c.yStart = bodies[i].pos.y;
+        if( c.zStart > bodies[i].pos.z )   c.zStart = bodies[i].pos.z;
+        if( c.xEnd < bodies[i].pos.x )   c.xEnd = bodies[i].pos.x;
+        if( c.yEnd < bodies[i].pos.y )   c.yEnd = bodies[i].pos.y;
+        if( c.zEnd < bodies[i].pos.z )   c.zEnd = bodies[i].pos.z;
+
+        
+    }
+
+    return c;
+}
+
+
+/*Slices representa en cuantos trozos se partira cada dimension a la hora de hacer los cuadrantesl*/
+void cuadrantePartition(int slices, Cuadrante c[], Body bodies[], int qBodies); 
+
+void cuadrantePartition(int slices, Cuadrante c[], Body bodies[], int qBodies){
+   Cuadrante spaceT;
+   spaceT = space(bodies, qBodies);
+
+} 
 double bodiesDist(Body c1, Body c2);
 
-void updF(Body bodies[],int arraySize);
+void updF(Body bodies[],int qBodies);
 
 double forceGrav(Body c1, Body c2);
 
-void updAcelOld(Body bodies[], int arraySize);
-void updPosOld(Body bodies[], int arraySize, double deltaT);
-void updVelOld(Body bodies[], int arraySize, double deltaT);
+void updAcelOld(Body bodies[], int qBodies);
+void updPosOld(Body bodies[], int qBodies, double deltaT);
+void updVelOld(Body bodies[], int qBodies, double deltaT);
 
-void updAcelFey(Body bodies[], int arraySize);
-void updPosFey(Body bodies[], int arraySize, double deltaT);
-void updVelFey(Body bodies[], int arraySize, double deltaT);
-void updVelFeyInit(Body bodies[], int arraySize, double deltaT);
+void updAcelFey(Body bodies[], int qBodies);
+void updPosFey(Body bodies[], int qBodies, double deltaT);
+void updVelFey(Body bodies[], int qBodies, double deltaT);
+void updVelFeyInit(Body bodies[], int qBodies, double deltaT);
 
 double CONSTANTE_GRAVITACION=6.67428e-11;
 int DIRECT_METHOD=1;
@@ -48,8 +94,10 @@ double totalEnergy(Body bodies[], int qBodies);
 double kinEnergy(Body bodies[], int qBodies);
 double potEnery(Body bodies[], int qBodies);
 
-void printPosData(Body bodies[], int arraySize, FILE *file, int dataType);
-void printEnerData(Body bodies[], int arraySize, FILE *file, int dataType);
+void printPosData(Body bodies[], int qBodies, FILE *file, int dataType);
+void printEnerData(Body bodies[], int qBodies, FILE *file, int dataType);
+
+
 
 int main(void){
 	int steps;
@@ -64,14 +112,14 @@ int main(void){
     double runTime;
     start = clock();
      
-    file = fopen("outFey","w"); 
-	enerFile = fopen("ener","w");	
+    file = fopen("outFey", "w"); 
+	enerFile = fopen("ener", "w");	
 	if(file == NULL || enerFile == NULL)  {
         	perror("failed to open some file");
         	return EXIT_FAILURE;
 	}
 		
-	fileData = fopen("initData","r");
+	fileData = fopen("initData", "r");
     loadExtData(bodies, &qBodies, fileData);
 
 	deltaT = 540;
@@ -80,20 +128,20 @@ int main(void){
 	fileOutInterval = steps/amountOfPoints;
 
 	/*init feynman computation*/
-	updF(bodies,qBodies);
-	updVelFeyInit(bodies,qBodies,deltaT);
+	updF(bodies, qBodies);
+	updVelFeyInit(bodies, qBodies, deltaT);
 
 	for (cont=0;cont<steps;cont++){
 		updPosFey(bodies, qBodies, deltaT);
 		updF(bodies, qBodies);
-		updAcelFey(bodies,qBodies);
+		updAcelFey(bodies, qBodies);
 		updVelFey(bodies, qBodies, deltaT);
 		if(!(cont%fileOutInterval)){
-			printPosData(bodies,qBodies,file,FEYNMAN_METHOD);
-			printEnerData(bodies,qBodies,enerFile,FEYNMAN_METHOD);
+			printPosData(bodies, qBodies, file, FEYNMAN_METHOD);
+			printEnerData(bodies, qBodies, enerFile, FEYNMAN_METHOD);
 		}
 		/*
-		updAcelOld(bodies,qBodies);
+		updAcelOld(bodies, qBodies);
 		updVelOld(bodies, qBodies, deltaT);
 		updPosOld(bodies, qBodies, deltaT);
 		*/
@@ -111,16 +159,16 @@ int main(void){
 }
 
 double bodiesDist(Body c1, Body c2){
-	return vectoresDist(&c1.pos,&c2.pos);
+	return vectoresDist(&c1.pos, &c2.pos);
 }
 
 double forceGrav(Body c1, Body c2){
 	double toReturn;
-	toReturn= c1.masa*c2.masa*CONSTANTE_GRAVITACION/pow(bodiesDist(c1,c2),2);
+	toReturn = c1.masa*c2.masa*CONSTANTE_GRAVITACION/pow(bodiesDist(c1, c2), 2);
 	return toReturn;
 }
 
-void updF(Body bodies[], int arraySize){
+void updF(Body bodies[], int qBodies){
 	int j,k;
 	double force;
 	Vector dirR;
@@ -129,14 +177,14 @@ void updF(Body bodies[], int arraySize){
 	/*
 	Se limpian las forces de la iteracion anterior
 	*/
-	for(j=0;j<arraySize;j++){
-		bodies[j].fAct.x=0;
-		bodies[j].fAct.y=0;
-		bodies[j].fAct.z=0;
+	for(j = 0; j < qBodies; j++){
+		bodies[j].fAct.x = 0;
+		bodies[j].fAct.y = 0;
+		bodies[j].fAct.z = 0;
 	}	
 
-	for(j=0;j<arraySize;j++){
-		for (k=j+1;k<arraySize;k++){
+	for(j=0;j< qBodies;j++){
+		for (k = j + 1; k < qBodies; k++){
 			force = forceGrav(bodies[j],bodies[k]);
     		dirR = vectoresResta(&bodies[j].pos,&bodies[k].pos);
 			distancia = vectorModulo(&dirR);	
@@ -153,28 +201,28 @@ void updF(Body bodies[], int arraySize){
 	}
 }
 
-void updAcelOld(Body bodies[], int arraySize){
+void updAcelOld(Body bodies[], int qBodies){
 	int i;
-	for(i = 0; i<arraySize;i++){
+	for(i = 0; i < qBodies; i++){
 		bodies[i].acel.x = bodies[i].fAct.x/bodies[i].masa;
 		bodies[i].acel.y = bodies[i].fAct.y/bodies[i].masa;
 		bodies[i].acel.z = bodies[i].fAct.z/bodies[i].masa;
 	}
 }
 
-void updAcelFey(Body bodies[], int arraySize){
+void updAcelFey(Body bodies[], int qBodies){
 	int i;
-	for(i = 0; i<arraySize;i++){
+	for(i = 0; i < qBodies; i++){
 		bodies[i].acel.x = bodies[i].fAct.x/bodies[i].masa;
 		bodies[i].acel.y = bodies[i].fAct.y/bodies[i].masa;
 		bodies[i].acel.z = bodies[i].fAct.z/bodies[i].masa;
 	}
 }
 
-void updVelFey(Body bodies[], int arraySize, double deltaT){
+void updVelFey(Body bodies[], int qBodies, double deltaT){
 	int i;
 	Body c;
-	for (i=0;i<arraySize;i++){
+	for (i = 0; i < qBodies; i++){
 		c = bodies[i];
 		bodies[i].vel.x = bodies[i].vel.x + bodies[i].acel.x*deltaT;
 		bodies[i].vel.y = bodies[i].vel.y + bodies[i].acel.y*deltaT;
@@ -182,10 +230,10 @@ void updVelFey(Body bodies[], int arraySize, double deltaT){
 	}
 }
 
-void updVelFeyInit(Body bodies[], int arraySize, double deltaT){
+void updVelFeyInit(Body bodies[], int qBodies, double deltaT){
 	int i;
 	Body c;
-	for (i=0;i<arraySize;i++){
+	for (i = 0; i < qBodies; i++){
 		c = bodies[i];
 		bodies[i].vel.x = bodies[i].vel.x + bodies[i].acel.x*deltaT/2;
 		bodies[i].vel.y = bodies[i].vel.y + bodies[i].acel.y*deltaT/2;
@@ -193,10 +241,10 @@ void updVelFeyInit(Body bodies[], int arraySize, double deltaT){
 	}
 }
 
-void updPosFey(Body bodies[], int arraySize, double deltaT){
+void updPosFey(Body bodies[], int qBodies, double deltaT){
 	int i;
 	Body c;
-	for (i=0;i<arraySize;i++){
+	for (i = 0; i < qBodies; i++){
 		c = bodies[i];
 	
 		bodies[i].pos.x += bodies[i].vel.x*deltaT;
@@ -206,33 +254,33 @@ void updPosFey(Body bodies[], int arraySize, double deltaT){
 	}
 }
 
-void printPosData(Body bodies[], int arraySize, FILE *file, int dataType){
-	char out[1000]="",buffer[60];
+void printPosData(Body bodies[], int qBodies, FILE *file, int dataType){
+	char out[1000] = "", buffer[60];
 	int i = 0;	
-	for (;i<arraySize;i++){
-		sprintf(buffer,"%11.3e \t %11.3e \t",bodies[i].pos.x/1000000, bodies[i].pos.y/1000000);
-		strcat(out,buffer);
+	for (; i < qBodies; i++){
+		sprintf(buffer, "%11.3e \t %11.3e \t", bodies[i].pos.x/1000000, bodies[i].pos.y/1000000);
+		strcat(out, buffer);
 	}
-	strcat(out,"\n");
-	fwrite(out,1,strlen(out),file);
+	strcat(out, "\n");
+	fwrite(out, 1, strlen(out), file);
 
 }
 
-void printEnerData(Body bodies[], int arraySize, FILE *file, int dataType){
-	char out[1000]="",buffer[60];
-	sprintf(buffer,"%11.3e \t ",totalEnergy(bodies,arraySize));
-	strcat(out,buffer);
-	strcat(out,"\n");
-	fwrite(out,1,strlen(out),file);
+void printEnerData(Body bodies[], int qBodies, FILE *file, int dataType){
+	char out[1000] = "", buffer[60];
+	sprintf(buffer,"%11.3e \t ", totalEnergy(bodies, qBodies));
+	strcat(out, buffer);
+	strcat(out, "\n");
+	fwrite(out, 1, strlen(out), file);
 
 }
 
-void updPosOld(Body bodies[], int arraySize, double deltaT){
+void updPosOld(Body bodies[], int qBodies, double deltaT){
 	int i;
 	Body c;
-	char out[1000]="",buffer[50];	
+	char out[1000] = "", buffer[50];	
 	
-	for (i=0;i<arraySize;i++){
+	for (i=0;i< qBodies;i++){
 		c = bodies[i];
 	
 		bodies[i].pos.x += bodies[i].vel.x*deltaT + bodies[i].acel.x*deltaT*deltaT/2;
@@ -245,10 +293,10 @@ void updPosOld(Body bodies[], int arraySize, double deltaT){
 }
 
 
-void updVelOld(Body bodies[], int arraySize, double deltaT){
+void updVelOld(Body bodies[], int qBodies, double deltaT){
 	int i;
 	Body c;
-	for (i=0;i<arraySize;i++){
+	for (i = 0; i < qBodies; i++){
 		c = bodies[i];
 		bodies[i].vel.x += bodies[i].acel.x*deltaT;
 		bodies[i].vel.y += bodies[i].acel.y*deltaT;
@@ -257,7 +305,7 @@ void updVelOld(Body bodies[], int arraySize, double deltaT){
 }
 
 double totalEnergy(Body bodies[], int qBodies){
-	return kinEnergy(bodies,qBodies)+potEnery(bodies,qBodies);	
+	return kinEnergy(bodies, qBodies) + potEnery(bodies, qBodies);	
 }
 
 
@@ -267,7 +315,7 @@ double kinEnergy(Body bodies[], int qBodies){
 	double ener = 0;
 	Body cuerpo;
 	double vel = 0;
-	for(;i<qBodies;i++){
+	for(;i < qBodies; i++){
 		cuerpo = bodies[i];
 		vel = vectorModulo(&cuerpo.vel);
 		ener += cuerpo.masa*vel*vel/2;
@@ -280,9 +328,9 @@ double potEnery(Body bodies[], int qBodies){
 	double ener = 0;
 	double dist;
 	double masa;
-	for(;i<qBodies;i++){
+	for(;i < qBodies; i++){
 		masa = bodies[i].masa;
-		for(j=i+1;j<qBodies;j++){
+		for(j = i + 1;j < qBodies; j++){
 			dist = vectoresDist(&bodies[i].pos,&bodies[j].pos);
 			ener += -CONSTANTE_GRAVITACION*masa*bodies[j].masa/dist;
 		}
@@ -302,9 +350,9 @@ Vector totalAngMom(Body bodies[], int qBodies){
 void loadExtData(Body bodies[], int *qBodies, FILE *file){
     int i = 0;
     rewind(file);
-    fscanf(file,"%d\n",qBodies);
-    for (;i<*qBodies;i++){
-        fscanf(file,"%lf%lf%lf%lf%lf%lf%lf\n",&bodies[i].masa,&bodies[i].pos.x,&bodies[i].pos.y,&bodies[i].pos.z,&bodies[i].vel.x,&bodies[i].vel.y,&bodies[i].vel.z);
+    fscanf(file, "%d\n", qBodies);
+    for (;i < *qBodies; i++){
+        fscanf(file, "%lf%lf%lf%lf%lf%lf%lf\n", &bodies[i].masa, &bodies[i].pos.x, &bodies[i].pos.y, &bodies[i].pos.z, &bodies[i].vel.x, &bodies[i].vel.y, &bodies[i].vel.z);
         /*printf("%g %g %g %g %g %g %g\n",bodies[i].masa,bodies[i].pos.x,bodies[i].pos.y,bodies[i].pos.z,bodies[i].vel.x,bodies[i].vel.y,bodies[i].vel.z);*/
     }
 
