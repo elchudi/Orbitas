@@ -13,6 +13,8 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 #include "vector.h"
 #include "vectorAlgebra.h"
 
+#define qMax 30
+
 typedef struct{
 	Vector pos;
 	Vector vel;
@@ -40,10 +42,11 @@ double CONSTANTE_GRAVITACION=6.67428e-11;
 int DIRECT_METHOD=1;
 int FEYNMAN_METHOD=2;
 
+void loadExtData(Body bodies[],int *qBodies, FILE *file);
 
-double totalEnergy(Body bodies[], int bodiesSize);
-double kinEnergy(Body bodies[], int bodiesSize);
-double potEnery(Body bodies[], int bodiesSize);
+double totalEnergy(Body bodies[], int qBodies);
+double kinEnergy(Body bodies[], int qBodies);
+double potEnery(Body bodies[], int qBodies);
 
 void printPosData(Body bodies[], int arraySize, FILE *file, int dataType);
 void printEnerData(Body bodies[], int arraySize, FILE *file, int dataType);
@@ -55,11 +58,11 @@ int main(void){
     Vector pos1, vel1;	
 	Body sol,tie,luna,venus;
 	int steps;
-	int const bodiesSize=4;
-	Body bodies[4];
+	int qBodies = 0;
+	Body bodies[qMax];
 	double deltaT;
 	int cont;
-	FILE *file,*enerFile;
+	FILE *file, *enerFile;
 	int fileOutInterval;
 	int amountOfPoints;	
     clock_t start, end;
@@ -122,22 +125,22 @@ int main(void){
 	bodies[3] = venus;
 	
 	/*init feynman computation*/
-	updF(bodies,bodiesSize);
-	updVelFeyInit(bodies,bodiesSize,bodiesSize);
+	updF(bodies,qBodies);
+	updVelFeyInit(bodies,qBodies,qBodies);
 
 	for (cont=0;cont<steps;cont++){
-		updPosFey(bodies, bodiesSize, deltaT);
-		updF(bodies, bodiesSize);
-		updAcelFey(bodies,bodiesSize);
-		updVelFey(bodies, bodiesSize, deltaT);
+		updPosFey(bodies, qBodies, deltaT);
+		updF(bodies, qBodies);
+		updAcelFey(bodies,qBodies);
+		updVelFey(bodies, qBodies, deltaT);
 		if(!(cont%fileOutInterval)){
-			printPosData(bodies,bodiesSize,file,FEYNMAN_METHOD);
-			printEnerData(bodies,bodiesSize,enerFile,FEYNMAN_METHOD);
+			printPosData(bodies,qBodies,file,FEYNMAN_METHOD);
+			printEnerData(bodies,qBodies,enerFile,FEYNMAN_METHOD);
 		}
 		/*
-		updAcelOld(bodies,bodiesSize);
-		updVelOld(bodies, bodiesSize, deltaT);
-		updPosOld(bodies, bodiesSize, deltaT);
+		updAcelOld(bodies,qBodies);
+		updVelOld(bodies, qBodies, deltaT);
+		updPosOld(bodies, qBodies, deltaT);
 		*/
 	}
 
@@ -297,18 +300,18 @@ void updVelOld(Body bodies[], int arraySize, double deltaT){
 	}
 }
 
-double totalEnergy(Body bodies[], int bodiesSize){
-	return kinEnergy(bodies,bodiesSize)+potEnery(bodies,bodiesSize);	
+double totalEnergy(Body bodies[], int qBodies){
+	return kinEnergy(bodies,qBodies)+potEnery(bodies,qBodies);	
 }
 
 
 
-double kinEnergy(Body bodies[], int bodiesSize){
+double kinEnergy(Body bodies[], int qBodies){
 	int i = 0;
 	double ener = 0;
 	Body cuerpo;
 	double vel = 0;
-	for(;i<bodiesSize;i++){
+	for(;i<qBodies;i++){
 		cuerpo = bodies[i];
 		vel = vectorModulo(&cuerpo.vel);
 		ener += cuerpo.masa*vel*vel/2;
@@ -316,14 +319,14 @@ double kinEnergy(Body bodies[], int bodiesSize){
 	return ener;
 }
 
-double potEnery(Body bodies[], int bodiesSize){
+double potEnery(Body bodies[], int qBodies){
 	int i = 0,j = 0;
 	double ener = 0;
 	double dist;
 	double masa;
-	for(;i<bodiesSize;i++){
+	for(;i<qBodies;i++){
 		masa = bodies[i].masa;
-		for(j=i+1;j<bodiesSize;j++){
+		for(j=i+1;j<qBodies;j++){
 			dist = vectoresDist(&bodies[i].pos,&bodies[j].pos);
 			ener += -CONSTANTE_GRAVITACION*masa*bodies[j].masa/dist;
 		}
@@ -331,7 +334,7 @@ double potEnery(Body bodies[], int bodiesSize){
 	return ener;
 }
 
-Vector totalAngMom(Body bodies[], int bodiesSize){
+Vector totalAngMom(Body bodies[], int qBodies){
 	Vector toRet;
 	toRet.x = 0;
 	toRet.y = 0;
@@ -339,4 +342,19 @@ Vector totalAngMom(Body bodies[], int bodiesSize){
 		
 	return toRet;	
 }
+
+void loadExtData(Body bodies[], int *qBodies, FILE *file){
+    int i = 0;
+    Body b;
+    rewind(file);
+    fscanf(file,"%d\n",qBodies);
+    
+    for (;i<*qBodies;i++){
+        b = bodies[i];
+        fscanf(file,"%lf%lf%lf%lf%lf%lf%lf\n",&b.masa,&b.pos.x,&b.pos.y,&b.pos.z,&b.vel.x,&b.vel.y,&b.vel.z);
+    }
+
+}
+
+
 
