@@ -1,8 +1,6 @@
 /*
 Programa para calcular orbitas de planetas:
 TODO LIST
-_ Mejorar los calculos de forces y/o velocidades (Feynman tiene una linda explicacion)
-_ Hacer que se lean de ficheros externos los datos de los problemas
 _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 */
 #include <stdio.h>
@@ -56,6 +54,14 @@ Cuadrante space(Body bodies[], int qBodies){
 
         
     }
+    /*Some breathing air for the space*/
+    if(c.xEnd > 0){ c.xEnd = c.xEnd*1.1;}else{ c.xEnd = c.xEnd*0.9;}
+    if(c.yEnd > 0){ c.yEnd = c.yEnd*1.1;}else{ c.yEnd = c.yEnd*0.9;}
+    if(c.zEnd > 0){ c.zEnd = c.zEnd*1.1;}else{ c.zEnd = c.zEnd*0.9;}
+    if(c.xStart < 0){ c.xStart = c.xStart*1.1;}else{ c.xStart = c.xStart*0.9;}
+    if(c.yStart < 0){ c.yStart = c.yStart*1.1;}else{ c.yStart = c.yStart*0.9;}
+    if(c.zStart < 0){ c.zStart = c.zStart*1.1;}else{ c.zStart = c.zStart*0.9;}
+
 
     return c;
 }
@@ -67,6 +73,7 @@ void cuadrantePartition(int slices, Cuadrante c[], Body bodies[], int qBodies);
 void cuadrantePartition(int slices, Cuadrante c[], Body bodies[], int qBodies){
    Cuadrante spaceT;
    spaceT = space(bodies, qBodies);
+
 
 } 
 double bodiesDist(Body c1, Body c2);
@@ -96,6 +103,7 @@ double potEnery(Body bodies[], int qBodies);
 
 void printPosData(Body bodies[], int qBodies, FILE *file, int dataType);
 void printEnerData(Body bodies[], int qBodies, FILE *file, int dataType);
+void printPlotingFile(int qBodies );
 
 
 
@@ -122,11 +130,11 @@ int main(void){
 	fileData = fopen("initData", "r");
     loadExtData(bodies, &qBodies, fileData);
 
-	deltaT = 540;
-	steps = 420000;
-	amountOfPoints = 77037;	
+	deltaT = 4400;
+	steps = 220000;
+	amountOfPoints = 37037;	
 	fileOutInterval = steps/amountOfPoints;
-
+    printPlotingFile(qBodies);
 	/*init feynman computation*/
 	updF(bodies, qBodies);
 	updVelFeyInit(bodies, qBodies, deltaT);
@@ -182,7 +190,6 @@ void updF(Body bodies[], int qBodies){
 		bodies[j].fAct.y = 0;
 		bodies[j].fAct.z = 0;
 	}	
-
 	for(j=0;j< qBodies;j++){
 		for (k = j + 1; k < qBodies; k++){
 			force = forceGrav(bodies[j],bodies[k]);
@@ -199,6 +206,7 @@ void updF(Body bodies[], int qBodies){
 			bodies[k].fAct.z += force*dirR.z/distancia;	
 		}	
 	}
+    
 }
 
 void updAcelOld(Body bodies[], int qBodies){
@@ -258,12 +266,35 @@ void printPosData(Body bodies[], int qBodies, FILE *file, int dataType){
 	char out[1000] = "", buffer[60];
 	int i = 0;	
 	for (; i < qBodies; i++){
+
+        /*Sin centro de referencia
 		sprintf(buffer, "%11.3e \t %11.3e \t", bodies[i].pos.x/1000000, bodies[i].pos.y/1000000);
-		strcat(out, buffer);
+        */
+        /*visto desde la tierra
+		sprintf(buffer, "%11.3e \t %11.3e \t", bodies[i].pos.x/1000000-bodies[3].pos.x/1000000, bodies[i].pos.y/1000000-bodies[3].pos.y/1000000);
+        */
+		/*visto desde el sol*/
+        sprintf(buffer, "%11.3e \t %11.3e \t", bodies[i].pos.x/1000000-bodies[0].pos.x/1000000, bodies[i].pos.y/1000000-bodies[0].pos.y/1000000);
+	    strcat(out, buffer);
 	}
 	strcat(out, "\n");
 	fwrite(out, 1, strlen(out), file);
 
+}
+
+void printPlotingFile(int qBodies ){
+	char out[1000] = "", buffer[60];
+    int i;
+    FILE *file;
+    file = fopen("orbitas.p", "w"); 
+	strcat(out, "plot 'outFey' using 1:2 with lines");
+	for (i=2; i < qBodies; i++){
+		sprintf(buffer, ", 'outFey' using %d:%d with lines",i*2-1,2*i);
+		strcat(out, buffer);
+	}
+	strcat(out, "\n");
+	fwrite(out, 1, strlen(out), file);
+    fclose(file);
 }
 
 void printEnerData(Body bodies[], int qBodies, FILE *file, int dataType){
@@ -292,7 +323,6 @@ void updPosOld(Body bodies[], int qBodies, double deltaT){
 	printf("%s  \n",out);
 }
 
-
 void updVelOld(Body bodies[], int qBodies, double deltaT){
 	int i;
 	Body c;
@@ -307,8 +337,6 @@ void updVelOld(Body bodies[], int qBodies, double deltaT){
 double totalEnergy(Body bodies[], int qBodies){
 	return kinEnergy(bodies, qBodies) + potEnery(bodies, qBodies);	
 }
-
-
 
 double kinEnergy(Body bodies[], int qBodies){
 	int i = 0;
@@ -355,8 +383,4 @@ void loadExtData(Body bodies[], int *qBodies, FILE *file){
         fscanf(file, "%lf%lf%lf%lf%lf%lf%lf\n", &bodies[i].masa, &bodies[i].pos.x, &bodies[i].pos.y, &bodies[i].pos.z, &bodies[i].vel.x, &bodies[i].vel.y, &bodies[i].vel.z);
         /*printf("%g %g %g %g %g %g %g\n",bodies[i].masa,bodies[i].pos.x,bodies[i].pos.y,bodies[i].pos.z,bodies[i].vel.x,bodies[i].vel.y,bodies[i].vel.z);*/
     }
-
 }
-
-
-

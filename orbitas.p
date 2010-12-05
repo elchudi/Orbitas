@@ -1,8 +1,1 @@
-      # Gnuplot script file for plotting data in file "force.dat"
-      # This file is called   force.p
-      set   autoscale                        # scale axes automatically
-      set title "Orbitas"
-      set xlabel "X"
-      set ylabel "Y"
-     # plot     "out" using 5:6 with lines title "moon"
-      plot    "outFey" using 3:4 with lines title "Earth", "outFey" using 5:6 with lines title "moon", "outFey" using 7:8 with lines title "venus"
+plot 'outFey' using 1:2 with lines, 'outFey' using 3:4 with lines, 'outFey' using 5:6 with lines, 'outFey' using 7:8 with lines, 'outFey' using 9:10 with lines, 'outFey' using 11:12 with lines, 'outFey' using 13:14 with lines, 'outFey' using 15:16 with lines, 'outFey' using 17:18 with lines, 'outFey' using 19:20 with lines
