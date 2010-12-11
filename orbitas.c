@@ -35,8 +35,8 @@ typedef struct tBody{
 } Body;
 
 /*Octant constructor !!! is this the way to do it? (i.e., if I need to create and array of poiters of structs in a function, should i do this or is ther such a thing as 'new struct' */
-struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE, double zE);
-struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE, double zE){
+struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE, double zE, Octant *parent);
+struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE, double zE, Octant *parent){
     Octant *toRet;
     toRet = malloc(sizeof(Octant));
     (*toRet).xStart = xS;
@@ -45,7 +45,7 @@ struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE
     (*toRet).xEnd = xE;
     (*toRet).yEnd = yE,
     (*toRet).zEnd = zE;
-   
+    (*toRet).parent = parent;
     return toRet;
 }
 
