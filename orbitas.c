@@ -13,23 +13,41 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 
 #define qMax 300
 
-typedef struct{
+typedef struct tOctant{
 	double xEnd;
 	double yEnd;
 	double zEnd;
 	double xStart;
 	double yStart;
 	double zStart;
-} Octant;
+    struct tOctant *parent;
+    struct tOctant *childs[8];
+    int isLeaf;
+    int isRoot;
+} Octant  ;
 
-typedef struct{
+typedef struct tBody{
 	Vector pos;
 	Vector vel;
 	Vector fAct;
 	Vector acel;
 	double masa;
-    Octant *octant;
 } Body;
+
+/*Octant constructor !!! is this the way to do it? (i.e., if I need to create and array of poiters of structs in a function, should i do this or is ther such a thing as 'new struct' */
+struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE, double zE);
+struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE, double zE){
+    Octant *toRet;
+    toRet = malloc(sizeof(Octant));
+    (*toRet).xStart = xS;
+    (*toRet).yStart = yS;
+    (*toRet).zStart = zS;
+    (*toRet).xEnd = xE;
+    (*toRet).yEnd = yE,
+    (*toRet).zEnd = zE;
+   
+    return toRet;
+}
 
 Octant space(Body bodies[], int qBodies);
 
@@ -51,7 +69,6 @@ Octant space(Body bodies[], int qBodies){
         if( c.xEnd < bodies[i].pos.x )   c.xEnd = bodies[i].pos.x;
         if( c.yEnd < bodies[i].pos.y )   c.yEnd = bodies[i].pos.y;
         if( c.zEnd < bodies[i].pos.z )   c.zEnd = bodies[i].pos.z;
-
         
     }
     /*Some breathing air for the space*/
@@ -62,20 +79,20 @@ Octant space(Body bodies[], int qBodies){
     if(c.yStart < 0){ c.yStart = c.yStart*1.1;}else{ c.yStart = c.yStart*0.9;}
     if(c.zStart < 0){ c.zStart = c.zStart*1.1;}else{ c.zStart = c.zStart*0.9;}
 
-
     return c;
 }
 
 
-/*Slices representa en cuantos trozos se partira cada dimension a la hora de hacer los octantsl*/
-void octantPartition(int slices, Octant o[], Body bodies[], int qBodies); 
+void octantPartition(Body bodies[], int qBodies); 
 
-void octantPartition(int slices, Octant o[], Body bodies[], int qBodies){
-    Octant spaceT, aux;
-    int i;
-    double xLen, yLen, zLen;
+void octantPartition(Body bodies[], int qBodies){
+    Octant spaceT;
+    int i = 0, j = 0, k = 0, slices = 0, cont = 0;
+    double xLen = 0, yLen = 0, zLen = 0;
+    /*Total space to partition*/
     spaceT = space(bodies, qBodies);
     /*Size of each octant*/
+    slices = 2;
     if(slices != 0){
         xLen = (spaceT.xEnd - spaceT.xStart)/slices;
         yLen = (spaceT.yEnd - spaceT.yStart)/slices;
@@ -85,16 +102,29 @@ void octantPartition(int slices, Octant o[], Body bodies[], int qBodies){
         yLen = spaceT.yEnd - spaceT.yStart;
         zLen = spaceT.zEnd - spaceT.zStart;
     }
-    for(i = 0; i <= slices; i++){
-        aux.xStart = spaceT.xStart + xLen*i;    
-        aux.yStart = spaceT.yStart + yLen*i;    
-        aux.zStart = spaceT.zStart + zLen*i;    
-        aux.xEnd = spaceT.xStart + xLen*(i+1);
-        aux.yEnd = spaceT.yStart + yLen*(i+1);
-        aux.zEnd = spaceT.zStart + zLen*(i+1);
+    cont = 0;
+    for(i = 0; i < slices; i++){
+        for (j = 0; j < slices; j++){
+            for (k = 0; k < slices; k++){
+                
+                /*
+                aux.xStart = spaceT.xStart + xLen*i;    
+                aux.yStart = spaceT.yStart + yLen*j;    
+                aux.zStart = spaceT.zStart + zLen*k;    
+                aux.xEnd = spaceT.xStart + xLen*(i+1);
+                aux.yEnd = spaceT.yStart + yLen*(j+1);
+                aux.zEnd = spaceT.zStart + zLen*(k+1);
+                */
+                spaceT.childs[cont] = getOctant(spaceT.xStart + xLen*i, spaceT.yStart + yLen*j, spaceT.zStart + zLen*k, spaceT.xStart + xLen*(i+1), spaceT.yStart + yLen*(j+1), spaceT.zStart + zLen*(k+1));
+                cont++;
+            }
+        }
     } 
 
 } 
+
+
+
 double bodiesDist(Body c1, Body c2);
 
 void updF(Body bodies[],int qBodies);
