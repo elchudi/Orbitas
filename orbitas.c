@@ -20,7 +20,7 @@ typedef struct{
 	double xStart;
 	double yStart;
 	double zStart;
-} Cuadrante;
+} Octant;
 
 typedef struct{
 	Vector pos;
@@ -28,13 +28,13 @@ typedef struct{
 	Vector fAct;
 	Vector acel;
 	double masa;
-    Cuadrante *cuadrante;
+    Octant *octant;
 } Body;
 
-Cuadrante space(Body bodies[], int qBodies);
+Octant space(Body bodies[], int qBodies);
 
-Cuadrante space(Body bodies[], int qBodies){
-    Cuadrante c;
+Octant space(Body bodies[], int qBodies){
+    Octant c;
     int i;
     c.xStart = bodies[0].pos.x;
     c.yStart = bodies[0].pos.y;
@@ -67,13 +67,32 @@ Cuadrante space(Body bodies[], int qBodies){
 }
 
 
-/*Slices representa en cuantos trozos se partira cada dimension a la hora de hacer los cuadrantesl*/
-void cuadrantePartition(int slices, Cuadrante c[], Body bodies[], int qBodies); 
+/*Slices representa en cuantos trozos se partira cada dimension a la hora de hacer los octantsl*/
+void octantPartition(int slices, Octant o[], Body bodies[], int qBodies); 
 
-void cuadrantePartition(int slices, Cuadrante c[], Body bodies[], int qBodies){
-   Cuadrante spaceT;
-   spaceT = space(bodies, qBodies);
-
+void octantPartition(int slices, Octant o[], Body bodies[], int qBodies){
+    Octant spaceT, aux;
+    int i;
+    double xLen, yLen, zLen;
+    spaceT = space(bodies, qBodies);
+    /*Size of each octant*/
+    if(slices != 0){
+        xLen = (spaceT.xEnd - spaceT.xStart)/slices;
+        yLen = (spaceT.yEnd - spaceT.yStart)/slices;
+        zLen = (spaceT.zEnd - spaceT.zStart)/slices;
+    }else{
+        xLen = spaceT.xEnd - spaceT.xStart;
+        yLen = spaceT.yEnd - spaceT.yStart;
+        zLen = spaceT.zEnd - spaceT.zStart;
+    }
+    for(i = 0; i <= slices; i++){
+        aux.xStart = spaceT.xStart + xLen*i;    
+        aux.yStart = spaceT.yStart + yLen*i;    
+        aux.zStart = spaceT.zStart + zLen*i;    
+        aux.xEnd = spaceT.xStart + xLen*(i+1);
+        aux.yEnd = spaceT.yStart + yLen*(i+1);
+        aux.zEnd = spaceT.zStart + zLen*(i+1);
+    } 
 
 } 
 double bodiesDist(Body c1, Body c2);
