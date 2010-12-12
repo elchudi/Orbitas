@@ -1,0 +1,1 @@
+      plot    'outFey' using 3:4 with lines , 'outFey' using 5:6 with lines, 'outFey' using 7:8 with lines 
