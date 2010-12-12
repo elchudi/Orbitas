@@ -49,8 +49,9 @@ Octant getRootOctant(Body bodies[], int qBodies){
     if(c.zStart < 0){ c.zStart = c.zStart*1.1;}else{ c.zStart = c.zStart*0.9;}
 
     /*Correct way of linking arrays? !!!*/
-    memcpy(&(c.bodies[0]),&(bodies[0]),qBodies);
+    memcpy(&(c.bodies),&(bodies),qBodies);
     printf("qBodies : %d , body 0: %g , 1: %g\n",qBodies, c.bodies[0].masa, c.bodies[10].masa); 
+    printf("qBodies : %d , body 0: %g , 1: %g\n",qBodies, bodies[0].masa,bodies[10].masa); 
     return c;
 }
 
