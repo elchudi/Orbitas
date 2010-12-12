@@ -10,119 +10,10 @@ _ Hacer que se resuelvan mediante autovectores y/o sistemas de equaciones
 #include <time.h>
 #include "vector.h"
 #include "vectorAlgebra.h"
-
+#include "body.h"
+#include "octant.h"
+#include "octantFunc.h"
 #define qMax 300
-
-typedef struct tOctant{
-	double xEnd;
-	double yEnd;
-	double zEnd;
-	double xStart;
-	double yStart;
-	double zStart;
-    struct tOctant *parent;
-    struct tOctant *childs[8];
-    int isLeaf;
-    int isRoot;
-} Octant  ;
-
-typedef struct tBody{
-	Vector pos;
-	Vector vel;
-	Vector fAct;
-	Vector acel;
-	double masa;
-} Body;
-
-/*Octant constructor !!! is this the way to do it? (i.e., if I need to create and array of poiters of structs in a function, should i do this or is ther such a thing as 'new struct' */
-struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE, double zE, Octant *parent);
-struct tOctant* getOctant (double xS, double yS, double zS, double xE, double yE, double zE, Octant *parent){
-    Octant *toRet;
-    toRet = malloc(sizeof(Octant));
-    (*toRet).xStart = xS;
-    (*toRet).yStart = yS;
-    (*toRet).zStart = zS;
-    (*toRet).xEnd = xE;
-    (*toRet).yEnd = yE,
-    (*toRet).zEnd = zE;
-    (*toRet).parent = parent;
-    return toRet;
-}
-
-Octant space(Body bodies[], int qBodies);
-
-Octant space(Body bodies[], int qBodies){
-    Octant c;
-    int i;
-    c.xStart = bodies[0].pos.x;
-    c.yStart = bodies[0].pos.y;
-    c.zStart = bodies[0].pos.z;
-    c.xEnd = bodies[0].pos.x;
-    c.yEnd = bodies[0].pos.y;
-    c.zEnd = bodies[0].pos.z;
-
-
-    for(i = 1; i < qBodies; i++){
-        if( c.xStart > bodies[i].pos.x )   c.xStart = bodies[i].pos.x;
-        if( c.yStart > bodies[i].pos.y )   c.yStart = bodies[i].pos.y;
-        if( c.zStart > bodies[i].pos.z )   c.zStart = bodies[i].pos.z;
-        if( c.xEnd < bodies[i].pos.x )   c.xEnd = bodies[i].pos.x;
-        if( c.yEnd < bodies[i].pos.y )   c.yEnd = bodies[i].pos.y;
-        if( c.zEnd < bodies[i].pos.z )   c.zEnd = bodies[i].pos.z;
-        
-    }
-    /*Some breathing air for the space*/
-    if(c.xEnd > 0){ c.xEnd = c.xEnd*1.1;}else{ c.xEnd = c.xEnd*0.9;}
-    if(c.yEnd > 0){ c.yEnd = c.yEnd*1.1;}else{ c.yEnd = c.yEnd*0.9;}
-    if(c.zEnd > 0){ c.zEnd = c.zEnd*1.1;}else{ c.zEnd = c.zEnd*0.9;}
-    if(c.xStart < 0){ c.xStart = c.xStart*1.1;}else{ c.xStart = c.xStart*0.9;}
-    if(c.yStart < 0){ c.yStart = c.yStart*1.1;}else{ c.yStart = c.yStart*0.9;}
-    if(c.zStart < 0){ c.zStart = c.zStart*1.1;}else{ c.zStart = c.zStart*0.9;}
-
-    return c;
-}
-
-
-void octantPartition(Body bodies[], int qBodies); 
-
-void octantPartition(Body bodies[], int qBodies){
-    Octant spaceT;
-    int i = 0, j = 0, k = 0, slices = 0, cont = 0;
-    double xLen = 0, yLen = 0, zLen = 0;
-    /*Total space to partition*/
-    spaceT = space(bodies, qBodies);
-    /*Size of each octant*/
-    slices = 2;
-    if(slices != 0){
-        xLen = (spaceT.xEnd - spaceT.xStart)/slices;
-        yLen = (spaceT.yEnd - spaceT.yStart)/slices;
-        zLen = (spaceT.zEnd - spaceT.zStart)/slices;
-    }else{
-        xLen = spaceT.xEnd - spaceT.xStart;
-        yLen = spaceT.yEnd - spaceT.yStart;
-        zLen = spaceT.zEnd - spaceT.zStart;
-    }
-    cont = 0;
-    for(i = 0; i < slices; i++){
-        for (j = 0; j < slices; j++){
-            for (k = 0; k < slices; k++){
-                
-                /*
-                aux.xStart = spaceT.xStart + xLen*i;    
-                aux.yStart = spaceT.yStart + yLen*j;    
-                aux.zStart = spaceT.zStart + zLen*k;    
-                aux.xEnd = spaceT.xStart + xLen*(i+1);
-                aux.yEnd = spaceT.yStart + yLen*(j+1);
-                aux.zEnd = spaceT.zStart + zLen*(k+1);
-                */
-                spaceT.childs[cont] = getOctant(spaceT.xStart + xLen*i, spaceT.yStart + yLen*j, spaceT.zStart + zLen*k, spaceT.xStart + xLen*(i+1), spaceT.yStart + yLen*(j+1), spaceT.zStart + zLen*(k+1));
-                cont++;
-            }
-        }
-    } 
-
-} 
-
 
 
 double bodiesDist(Body c1, Body c2);
@@ -157,7 +48,8 @@ void printPlotingFile(int qBodies );
 
 
 int main(void){
-	int steps;
+	Octant rootOct;
+    int steps;
 	int qBodies = 0;
 	Body bodies[qMax];
 	double deltaT;
@@ -204,7 +96,7 @@ int main(void){
 		*/
 	}
 
-
+    rootOct = getRootOctant(bodies, qBodies);
 	fclose(file);
 	fclose(enerFile);
 	fclose(fileData);

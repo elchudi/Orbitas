@@ -1,7 +1,6 @@
 #ifndef VECTOR
 #define VECTOR
 
-
 typedef struct{
 	double x;
 	double y;
